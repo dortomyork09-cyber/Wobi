@@ -39,9 +39,9 @@
 
 ## 다운로드 및 실행
 
-1. [Releases](https://github.com/dortomyork09-cyber/WCW-widget/releases) 페이지에서 최신 `WCW-x.x.x.exe` 다운로드
-2. 실행 (Windows SmartScreen 경고가 뜰 수 있음 — 서명되지 않은 소규모 오픈소스 앱이라 발생하는 정상적인 경고이며, 아래 안내를 참고)
-3. 우클릭 메뉴 또는 트레이 아이콘으로 원하는 위젯 추가
+1. [Releases](https://github.com/dortomyork09-cyber/WCW-widget/releases) 페이지에서 최신 `WCW-x.x.x.exe` (설치 파일) 다운로드
+2. 실행 후 설치 마법사 따라 설치 (Windows SmartScreen 경고가 뜰 수 있음 — 서명되지 않은 소규모 오픈소스 앱이라 발생하는 정상적인 경고이며, 아래 안내를 참고). 설치가 끝나면 바탕화면·시작메뉴에 바로가기가 자동으로 생기고, 새 버전이 나오면 백그라운드에서 자동으로 업데이트됩니다.
+3. 우클릭 메뉴 또는 트레이 아이콘으로 원하는 위젯 추가 (설정에서 "컴퓨터 시작 시 자동 실행"도 켤 수 있어요)
 
 Windows SmartScreen 경고가 걱정된다면, 이 저장소의 코드를 직접 확인하거나 [VirusTotal 스캔 결과](https://www.virustotal.com)로 안전성을 검증할 수 있습니다.
 
