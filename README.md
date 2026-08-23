@@ -1,18 +1,18 @@
-# WCW — Windows Connecting the World
+# Wesk — 바탕화면 위젯 앱
 
 **바탕화면에 원하는 위젯을 그대로 올려두는, 무료 오픈소스 윈도우 위젯 앱**
 
 시계, 할일 목록, 메모, 주식, 환율, 뽀모도로 타이머 등 31가지 위젯을 클릭 한 번으로 바탕화면에 배치하고 자유롭게 꾸밀 수 있습니다.
 
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows)](https://github.com/dortomyork09-cyber/WCW-widget/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows)](https://github.com/dortomyork09-cyber/Wesk/releases)
 [![License](https://img.shields.io/badge/license-see%20LICENSE.md-lightgrey)](./LICENSE.md)
-[![Release](https://img.shields.io/github/v/release/dortomyork09-cyber/WCW-widget)](https://github.com/dortomyork09-cyber/WCW-widget/releases)
+[![Release](https://img.shields.io/github/v/release/dortomyork09-cyber/Wesk)](https://github.com/dortomyork09-cyber/Wesk/releases)
 
-[웹사이트](https://dortomyork09-cyber.github.io/WCW-widget/) · [다운로드](https://github.com/dortomyork09-cyber/WCW-widget/releases) · [Instagram](https://www.instagram.com/wcw_widget)
+[웹사이트](https://dortomyork09-cyber.github.io/Wesk/) · [다운로드](https://github.com/dortomyork09-cyber/Wesk/releases) · [Instagram](https://www.instagram.com/wcw_widget)
 
 ---
 
-## 왜 WCW인가요
+## 왜 Wesk인가요
 
 - **완전 무료** — 결제, 구독, 계정 가입 전부 없음
 - **오픈소스** — 코드 전체가 공개돼 있어서 뭘 하는 앱인지 직접 확인 가능
@@ -35,11 +35,11 @@
 
 ## 스크린샷
 
-![WCW 스크린샷](./screenshot.png)
+![Wesk 스크린샷](./screenshot.png)
 
 ## 다운로드 및 실행
 
-1. [Releases](https://github.com/dortomyork09-cyber/WCW-widget/releases) 페이지에서 최신 `WCW-x.x.x.exe` (설치 파일) 다운로드
+1. [Releases](https://github.com/dortomyork09-cyber/Wesk/releases) 페이지에서 최신 `Wesk-x.x.x.exe` (설치 파일) 다운로드
 2. 실행 후 설치 마법사 따라 설치 (Windows SmartScreen 경고가 뜰 수 있음 — 서명되지 않은 소규모 오픈소스 앱이라 발생하는 정상적인 경고이며, 아래 안내를 참고). 설치가 끝나면 바탕화면·시작메뉴에 바로가기가 자동으로 생기고, 새 버전이 나오면 백그라운드에서 자동으로 업데이트됩니다.
 3. 우클릭 메뉴 또는 트레이 아이콘으로 원하는 위젯 추가 (설정에서 "컴퓨터 시작 시 자동 실행"도 켤 수 있어요)
 
@@ -48,8 +48,8 @@ Windows SmartScreen 경고가 걱정된다면, 이 저장소의 코드를 직접
 ## 소스에서 직접 빌드하기
 
 ```bash
-git clone https://github.com/dortomyork09-cyber/WCW-widget.git
-cd WCW-widget
+git clone https://github.com/dortomyork09-cyber/Wesk.git
+cd Wesk
 npm install
 npm start                # 개발 모드로 실행
 npm run build             # portable exe 빌드 (dist 폴더에 생성됨, 설치 불필요)
@@ -72,6 +72,6 @@ npm run build:all         # 위 두 개를 한 번에 빌드
 
 ## 링크
 
-- 웹사이트: https://dortomyork09-cyber.github.io/WCW-widget/
+- 웹사이트: https://dortomyork09-cyber.github.io/Wesk/
 - Instagram: [@wcw_widget](https://www.instagram.com/wcw_widget)
-- 이슈 / 버그 제보: [GitHub Issues](https://github.com/dortomyork09-cyber/WCW-widget/issues)
+- 이슈 / 버그 제보: [GitHub Issues](https://github.com/dortomyork09-cyber/Wesk/issues)

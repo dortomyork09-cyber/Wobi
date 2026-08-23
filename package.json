@@ -1,9 +1,9 @@
 {
   "name": "wcw",
-  "version": "1.1.1",
-  "description": "Windows Connecting the World - 바탕화면 위젯",
+  "version": "1.2.0",
+  "description": "Wesk - 바탕화면 위젯",
   "main": "main.js",
-  "author": "WCW",
+  "author": "Wesk",
   "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
     "start": "electron .",
@@ -12,8 +12,8 @@
     "build:all": "electron-builder --win portable nsis --publish never"
   },
   "build": {
-    "appId": "com.wcw.widget",
-    "productName": "WCW",
+    "appId": "com.wesk.widget",
+    "productName": "Wesk",
     "icon": "icon.png",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
@@ -29,7 +29,7 @@
     "publish": {
       "provider": "github",
       "owner": "dortomyork09-cyber",
-      "repo": "WCW-widget"
+      "repo": "Wesk"
     },
     "files": [
       "**/*",

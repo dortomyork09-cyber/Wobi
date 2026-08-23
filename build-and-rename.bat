@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================
-echo   WCW Build Script
+echo   Wesk Build Script
 echo ============================================
 echo.
 
@@ -18,20 +18,20 @@ if errorlevel 1 goto InstallFail
 echo.
 echo [2/2] Building (this can take a few minutes)...
 echo.
-call npm run build
+call npm run build:installer
 if errorlevel 1 goto BuildFail
 
 for /f "usebackq delims=" %%v in (`node -p "require('./package.json').version"`) do set VER=%%v
 if "%VER%"=="" goto NoVer
 
-if exist "dist\WCW-%VER%.exe" goto BuildOk
+if exist "dist\Wesk-%VER%.exe" goto BuildOk
 goto NoExe
 
 :BuildOk
 echo.
 echo ============================================
 echo   Build complete!
-echo   dist\WCW-%VER%.exe is ready.
+echo   dist\Wesk-%VER%.exe is ready.
 echo   Upload that file to your GitHub Release.
 echo ============================================
 goto End
@@ -67,7 +67,7 @@ goto End
 :NoExe
 echo.
 echo ============================================
-echo   Build finished but dist\WCW-%VER%.exe
+echo   Build finished but dist\Wesk-%VER%.exe
 echo   was not found. Please check the dist folder.
 echo ============================================
 goto End

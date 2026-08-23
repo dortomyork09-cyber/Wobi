@@ -6,13 +6,13 @@ param(
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # 이미 Audio 클래스가 등록되어 있으면 다시 등록하지 않음
-if (-not ("WCW.Audio" -as [type])) {
+if (-not ("Wesk.Audio" -as [type])) {
 
 Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
 
-namespace WCW
+namespace Wesk
 {
     [Guid("5CDF2C82-841E-4546-9722-0CF74078229A")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -172,7 +172,7 @@ try {
                 )
             )
 
-        [WCW.Audio]::Volume =
+        [Wesk.Audio]::Volume =
             $safeLevel / 100.0
 
         Write-Output $safeLevel
@@ -182,7 +182,7 @@ try {
     else {
 
         $current =
-            [WCW.Audio]::Volume * 100
+            [Wesk.Audio]::Volume * 100
 
         Write-Output (
             [Math]::Round(

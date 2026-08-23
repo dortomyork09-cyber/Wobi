@@ -1,10 +1,10 @@
 # 라이선스 (License)
 
-Copyright (c) 2026 WCW (dortomyork09-cyber)
+Copyright (c) 2026 Wesk (dortomyork09-cyber)
 
 ## 한국어
 
-이 저장소의 소스 코드와 실행 파일(WCW)의 모든 권리는 원작자에게 있습니다.
+이 저장소의 소스 코드와 실행 파일(Wesk)의 모든 권리는 원작자에게 있습니다.
 
 **허용되는 것:**
 - 배포된 실행 파일(.exe)을 개인적으로 무료로 다운로드하여 사용하는 것
@@ -21,7 +21,7 @@ Copyright (c) 2026 WCW (dortomyork09-cyber)
 
 ## English
 
-All rights to the source code and compiled application (WCW) in this repository are reserved by the original author.
+All rights to the source code and compiled application (Wesk) in this repository are reserved by the original author.
 
 **Permitted:**
 - Downloading and using the distributed executable (.exe) for free, for personal use

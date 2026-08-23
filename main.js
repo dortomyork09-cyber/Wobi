@@ -147,7 +147,7 @@ function notifyIfJustUpdated() {
       try {
         if (Notification.isSupported()) {
           new Notification({
-            title: 'WCW 업데이트 완료',
+            title: 'Wesk 업데이트 완료',
             body: `v${lastVersion} -> v${currentVersion}(으)로 업데이트됐어요.`,
             icon: path.join(__dirname, 'icon.png')
           }).show()
@@ -167,13 +167,13 @@ function checkForUpdate() {
   try {
     const options = {
       headers: {
-        'User-Agent': 'WCW-App'
+        'User-Agent': 'Wesk-App'
       },
       timeout: 8000
     }
 
     const req = https.get(
-      'https://api.github.com/repos/dortomyork09-cyber/WCW-widget/releases/latest',
+      'https://api.github.com/repos/dortomyork09-cyber/Wesk/releases/latest',
       options,
       res => {
         let data = ''
@@ -196,12 +196,12 @@ function checkForUpdate() {
             if (isNewerVersion(latestVersion, currentVersion)) {
               const releaseUrl =
                 json.html_url ||
-                'https://github.com/dortomyork09-cyber/WCW-widget/releases/latest'
+                'https://github.com/dortomyork09-cyber/Wesk/releases/latest'
 
               dialog
                 .showMessageBox({
                   type: 'info',
-                  title: 'WCW 업데이트 알림',
+                  title: 'Wesk 업데이트 알림',
                   message: `새 버전(${latestVersion})이 나왔어요.\n지금 버전은 ${currentVersion}입니다.`,
                   buttons: ['다운로드 페이지 열기', '나중에'],
                   defaultId: 0,
@@ -252,7 +252,7 @@ function setupAutoUpdater() {
       try {
         if (Notification.isSupported()) {
           new Notification({
-            title: 'WCW 업데이트 준비됨',
+            title: 'Wesk 업데이트 준비됨',
             body: `v${info.version} 다운로드를 마쳤어요. 앱을 재시작하면 적용돼요.`,
             icon: path.join(__dirname, 'icon.png')
           }).show()
@@ -392,7 +392,7 @@ function createWindow() {
     try {
       if (tray && !tray.isDestroyed()) {
         tray.setToolTip(
-          (typeof text === 'string' && text) ? text : 'WCW 위젯'
+          (typeof text === 'string' && text) ? text : 'Wesk 위젯'
         )
       }
     } catch (err) {}
@@ -1042,7 +1042,7 @@ function createWindow() {
   // 메인 프로세스에서 하는 게 안전하고 일관적이라서).
 
   function getMediaDir() {
-    const dir = path.join(app.getPath('pictures'), 'WCW')
+    const dir = path.join(app.getPath('pictures'), 'Wesk')
 
     try {
       if (!fs.existsSync(dir)) {
@@ -1083,7 +1083,7 @@ function createWindow() {
       }
 
       const dir = getMediaDir()
-      const filename = `WCW_캡처_${timestampName()}.png`
+      const filename = `Wesk_캡처_${timestampName()}.png`
       const filePath = path.join(dir, filename)
 
       fs.writeFileSync(filePath, img.toPNG())
@@ -1142,7 +1142,7 @@ function createWindow() {
         }
 
         const dir = getMediaDir()
-        const filename = `WCW_녹화_${timestampName()}.webm`
+        const filename = `Wesk_녹화_${timestampName()}.webm`
         const filePath = path.join(dir, filename)
 
         fs.writeFileSync(filePath, buffer)
@@ -1208,9 +1208,9 @@ function createWindow() {
           '.json'
         const win = BrowserWindow.getAllWindows()[0]
         const result = await dialog.showSaveDialog(win, {
-          title: 'WCW 백업 저장',
+          title: 'Wesk 백업 저장',
           defaultPath: defaultName,
-          filters: [{ name: 'WCW 백업 파일', extensions: ['json'] }]
+          filters: [{ name: 'Wesk 백업 파일', extensions: ['json'] }]
         })
         if (result.canceled || !result.filePath) {
           return { success: false, canceled: true }
@@ -1230,9 +1230,9 @@ function createWindow() {
       try {
         const win = BrowserWindow.getAllWindows()[0]
         const result = await dialog.showOpenDialog(win, {
-          title: 'WCW 백업 불러오기',
+          title: 'Wesk 백업 불러오기',
           properties: ['openFile'],
-          filters: [{ name: 'WCW 백업 파일', extensions: ['json'] }]
+          filters: [{ name: 'Wesk 백업 파일', extensions: ['json'] }]
         })
         if (result.canceled || !result.filePaths || !result.filePaths[0]) {
           return { success: false, canceled: true }
@@ -1329,7 +1329,7 @@ app.whenReady().then(() => {
         Menu.buildFromTemplate([
           {
             label:
-              'WCW 보이기',
+              'Wesk 보이기',
 
             click: () => {
 
@@ -1375,7 +1375,7 @@ app.whenReady().then(() => {
         ])
 
       tray.setToolTip(
-        'WCW 위젯'
+        'Wesk 위젯'
       )
 
       tray.setContextMenu(
