@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, Tray, Menu, dialog, shell, desktopCapturer, clipboard, Notification } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, dialog, shell, desktopCapturer, clipboard, Notification, globalShortcut } = require('electron')
 const path = require('path')
 const https = require('https')
 const fs = require('fs')
@@ -31,7 +31,33 @@ const isPortableBuild = !!process.env.PORTABLE_EXECUTABLE_DIR
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache')
 
 let win = null
-let tray = null
+let peeking = false
+// "항상 위에 표시"로 핀한 위젯마다 따로 뜨는 아주 작은 전용 창들.
+// 위젯 id → 그 위젯만 담은 BrowserWindow.
+const pinnedWindows = {}
+// 핀 위젯 창 안쪽 여백(px). index.html의 PIN_MARGIN 상수와 반드시 같은 값을
+// 유지해야 한다 — 창 크기와 위젯이 꽉 채우는 크기가 서로 어긋나면 위젯 주변에
+// 빈 여백이 남거나 잘리는 것처럼 보인다.
+const PIN_MARGIN = 24
+
+// 전역 단축키(기본 Alt+W)로 위젯 화면을 다른 창들보다 앞으로 잠깐
+// 띄우는 "소환" 기능. win이 아직 없거나 이미 파괴된 상태면 조용히 무시한다
+// (앱 종료 직전에 단축키가 눌리는 등의 드문 경우를 방어).
+function togglePeek() {
+  try {
+    if (!win || win.isDestroyed()) return
+    if (peeking) {
+      win.setAlwaysOnTop(false)
+      peeking = false
+    } else {
+      win.setAlwaysOnTop(true, 'screen-saver')
+      win.focus()
+      peeking = true
+    }
+  } catch (e) {
+    logError('toggle-peek', e)
+  }
+}
 
 // ==========================================
 // 에러 로그
@@ -241,8 +267,11 @@ function checkForUpdate() {
 // 하나가 그냥 통째로 도는 구조라 "실행 중인 자기 자신을 갈아끼우는" 게 원리상
 // 안 되기 때문에, 포터블 빌드에서는 이 함수가 아무것도 안 하고 기존
 // checkForUpdate()의 "새 버전 나왔어요, 다운로드 페이지 열기" 안내로 대체된다.
-function setupAutoUpdater() {
-  if (!autoUpdater || isPortableBuild) return
+// 이벤트 리스너는 앱이 켜져있는 동안 딱 한 번만 등록하면 된다(반복 등록하면
+// 리스너가 계속 쌓여서 나중엔 알림이 여러 번 뜨거나 메모리 경고가 뜰 수 있음).
+let autoUpdaterListenersReady = false
+function setupAutoUpdaterListeners() {
+  if (!autoUpdater || isPortableBuild || autoUpdaterListenersReady) return
 
   try {
     autoUpdater.autoDownload = true
@@ -266,11 +295,28 @@ function setupAutoUpdater() {
       logError('auto-updater', err)
     })
 
-    autoUpdater.checkForUpdatesAndNotify().catch(err => {
-      logError('auto-updater-check', err)
-    })
+    autoUpdaterListenersReady = true
   } catch (e) {
     logError('auto-updater-setup', e)
+  }
+}
+
+// 실제로 새 버전이 있는지 확인을 실행한다. 앱을 켤 때 한 번, 그리고 켜놓은
+// 동안에도 몇 시간마다 한 번씩 이 함수를 불러준다 — Wesk는 트레이 아이콘도
+// 없이 며칠씩 계속 켜놓고 쓰는 앱이라, 시작할 때 딱 한 번만 확인하면 그 뒤에
+// 나온 새 버전은 앱을 완전히 껐다 다시 켜기 전까진 영영 확인이 안 될 수 있음.
+function checkForUpdateNow() {
+  if (!isPortableBuild && autoUpdater) {
+    setupAutoUpdaterListeners()
+    try {
+      autoUpdater.checkForUpdatesAndNotify().catch(err => {
+        logError('auto-updater-check', err)
+      })
+    } catch (e) {
+      logError('auto-updater-check', e)
+    }
+  } else {
+    checkForUpdate()
   }
 }
 
@@ -362,6 +408,35 @@ function createWindow() {
     forward: true
   })
 
+  // ── 단축키 소환(peek) 모드 ──
+  // 평소엔 alwaysOnTop:false라서 다른 창에 가려져 있다가, 전역 단축키를
+  // 누르면 잠깐 맨 앞으로 띄워서(alwaysOnTop:true) 바탕화면까지 안 가고도
+  // 위젯을 바로 확인할 수 있게 한다. 사용자가 다른 창을 클릭해서 포커스가
+  // 빠져나가면(blur) 자동으로 다시 원래 상태(맨 앞 고정 해제)로 내려간다 —
+  // 그래야 "다시 안 눌러도 알아서 원래대로 돌아온다"는 느낌을 준다.
+  win.on('blur', () => {
+    if (peeking) {
+      try {
+        win.setAlwaysOnTop(false)
+      } catch (e) {}
+      peeking = false
+    }
+  })
+
+  // 메인 창이 닫히면(예: 상단 바의 종료 버튼) 핀돼서 따로 떠있던 위젯 창들도
+  // 같이 닫는다 — 안 그러면 메인 창도 트레이도 없는 상태로 핀 위젯 창만
+  // 덩그러니 남아서, 사용자가 설정이나 다른 위젯에 다시 접근할 방법이 없어진다.
+  // 각 핀 창은 자기 자신의 'closed' 핸들러에서 정리되므로 여기서는 close()만
+  // 호출하면 된다.
+  win.on('closed', () => {
+    Object.keys(pinnedWindows).forEach(id => {
+      try {
+        const pinWin = pinnedWindows[id]
+        if (pinWin && !pinWin.isDestroyed()) pinWin.close()
+      } catch (e) {}
+    })
+  })
+
   ipcMain.on('set-ignore-mouse', (e, ignore) => {
     try {
       if (win && !win.isDestroyed()) {
@@ -384,19 +459,109 @@ function createWindow() {
     logError('renderer', new Error(message))
   })
 
-  // 트레이 아이콘에 마우스를 올렸을 때 다음 알람/타이머를 보여주기 위해,
-  // 렌더러가 주기적으로 계산해서 보내주는 문구를 그대로 트레이 툴팁에 반영한다.
-  // 트레이 자체는 이 파일 아래쪽(app.whenReady)에서 따로 만들어지므로,
-  // 여기서는 그 시점에 tray가 아직 없을 수도 있어 매번 존재 여부만 확인한다.
-  ipcMain.on('update-tray-tooltip', (e, text) => {
+  // ── 위젯 "항상 위에 표시"(핀) ──
+  // index.html 쪽에서 위젯 하나를 핀하면, 그 위젯만 담은 아주 작은 전용 창을
+  // 새로 열어서 항상 위 고정을 건다. 같은 index.html 파일을 ?pinned=<id>
+  // 쿼리로 다시 불러오므로, 위젯 종류(31가지)마다 따로 코드를 만들 필요 없이
+  // 기존 렌더러 로직을 그대로 재사용한다 — 그 창 쪽에서 쿼리를 보고 알아서
+  // 위젯 하나만 그린다.
+  ipcMain.on('pin-widget', (e, payload) => {
     try {
-      if (tray && !tray.isDestroyed()) {
-        tray.setToolTip(
-          (typeof text === 'string' && text) ? text : 'Wesk 위젯'
-        )
-      }
-    } catch (err) {}
+      if (!payload || !payload.id) return
+      const id = payload.id
+      // 이미 이 위젯이 핀돼있으면(예: 앱을 재시작했는데 핀 상태가 남아있어서
+      // 부팅 시 다시 요청이 온 경우) 새로 만들지 않고 기존 창을 그대로 둔다.
+      if (pinnedWindows[id] && !pinnedWindows[id].isDestroyed()) return
+      const minW = 160 + PIN_MARGIN * 2
+      const minH = 80 + PIN_MARGIN * 2
+      const x = Math.round(Number(payload.x) || 0)
+      const y = Math.round(Number(payload.y) || 0)
+      const width = Math.max(minW, Math.round(Number(payload.width) || minW))
+      const height = Math.max(minH, Math.round(Number(payload.height) || minH))
+      const pinWin = new BrowserWindow({
+        x,
+        y,
+        width,
+        height,
+        minWidth: minW,
+        minHeight: minH,
+        frame: false,
+        transparent: true,
+        // 생성자의 alwaysOnTop:true만으로는 기본("floating") 레벨이라, 다른
+        // 앱이 전체화면으로 뜨거나 그 앱도 always-on-top을 걸어두면 이 창이
+        // 뒤로 밀릴 수 있다. 전역 단축키 소환(peek)과 똑같이 가장 높은
+        // 레벨인 'screen-saver'를 명시적으로 걸어서, 정말 "모든 창 위"에
+        // 있도록 한다.
+        alwaysOnTop: true,
+        resizable: true,
+        skipTaskbar: true,
+        show: false,
+        icon: path.join(__dirname, 'icon.png'),
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false
+        }
+      })
+      try {
+        pinWin.setAlwaysOnTop(true, 'screen-saver')
+      } catch (err) {}
+      // Windows에서는 다른 프로그램이 자기 창을 앞으로 가져올 때(포커스를
+      // 받을 때) 같은 always-on-top 레벨이어도 그 창에 밀려 뒤로 가는
+      // 경우가 있다. 포커스가 다른 곳으로 옮겨갈 때마다 다시 맨 앞으로
+      // 끌어올려서, 정말로 "항상" 위에 있게 만든다.
+      pinWin.on('blur', () => {
+        try {
+          if (pinWin && !pinWin.isDestroyed()) pinWin.setAlwaysOnTop(true, 'screen-saver')
+        } catch (err) {}
+      })
+      pinnedWindows[id] = pinWin
+      pinWin.loadFile('index.html', { query: { pinned: id } })
+      pinWin.once('ready-to-show', () => {
+        if (pinWin && !pinWin.isDestroyed()) {
+          pinWin.show()
+          try {
+            pinWin.setAlwaysOnTop(true, 'screen-saver')
+          } catch (err) {}
+        }
+      })
+      // 어떻게 닫히든(핀 해제 버튼, Alt+F4, 앱 종료 등) 여기 한 곳에서만
+      // 정리하면 돼서, "핀 해제" 처리를 여기저기 중복해서 두지 않아도 된다.
+      pinWin.on('closed', () => {
+        delete pinnedWindows[id]
+        try {
+          if (win && !win.isDestroyed()) {
+            win.webContents.send('widget-unpinned', id)
+          }
+        } catch (err) {}
+      })
+    } catch (err) {
+      logError('pin-widget', err)
+    }
   })
+
+  // 핀 해제 버튼(핀 창 쪽)을 누르면 그 창을 닫기만 하면 된다 — 실제로 메인
+  // 창에 위젯을 되돌리는 처리는 위 pinWin.on('closed')에서 공통으로 한다.
+  ipcMain.on('unpin-widget', (e, id) => {
+    try {
+      const pinWin = pinnedWindows[id]
+      if (pinWin && !pinWin.isDestroyed()) pinWin.close()
+    } catch (err) {
+      logError('unpin-widget', err)
+    }
+  })
+
+  // 설정의 "초기화"(모든 위젯·데이터 삭제)를 누르면 메인 창은 localStorage를
+  // 통째로 지우고 새로고침하는데, 그때 핀돼서 따로 떠있는 위젯 창들도 같이
+  // 정리해야 한다 — 안 그러면 데이터는 다 지워졌는데 창만 화면에 남는다.
+  ipcMain.on('close-all-pinned', () => {
+    Object.keys(pinnedWindows).forEach(id => {
+      try {
+        const pinWin = pinnedWindows[id]
+        if (pinWin && !pinWin.isDestroyed()) pinWin.close()
+      } catch (err) {}
+    })
+  })
+
 
   // ==========================================
   // 뉴스 RSS
@@ -1256,6 +1421,19 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  // 전역 단축키로 위젯 소환하기. 다른 앱이 이미 같은 조합을 선점하고 있으면
+  // register()가 false를 반환하는데, 그래도 앱 자체가 죽으면 안 되니 로그만
+  // 남기고 넘어간다(사용자에게 별도 안내는 추후 설정 화면에서 재등록 가능하게
+  // 확장할 수 있음).
+  try {
+    const peekRegistered = globalShortcut.register('Alt+W', togglePeek)
+    if (!peekRegistered) {
+      logError('global-shortcut-register', new Error('Alt+W 등록 실패 (다른 프로그램이 이미 사용 중일 수 있음)'))
+    }
+  } catch (e) {
+    logError('global-shortcut-register', e)
+  }
+
   // 모니터를 연결/해제하거나 배치·해상도를 바꾸면 위젯을 놓을 수 있는 전체
   // 영역도 바뀌므로, 창 크기를 다시 계산해서 맞춰준다.
   function resizeWindowForDisplays() {
@@ -1285,12 +1463,14 @@ app.whenReady().then(() => {
   // NSIS 설치형으로 실행 중이고 electron-updater가 설치돼있으면 진짜 자동
   // 업데이트를, 아니면(포터블 exe) 기존의 "새 버전 나왔어요" 안내만 띄운다.
   setTimeout(() => {
-    if (!isPortableBuild && autoUpdater) {
-      setupAutoUpdater()
-    } else {
-      checkForUpdate()
-    }
+    checkForUpdateNow()
   }, 3000)
+
+  // 앱을 켜놓은 동안에도 6시간마다 한 번씩 다시 확인한다 (위 이유로 시작할
+  // 때 한 번만으론 며칠씩 켜놓는 사용 패턴에서 부족함).
+  setInterval(() => {
+    checkForUpdateNow()
+  }, 6 * 60 * 60 * 1000)
 
   // 렌더러(화면) 프로세스가 죽으면 왜 죽었는지 로그로 남긴다
   app.on('render-process-gone', (event, webContents, details) => {
@@ -1300,90 +1480,6 @@ app.whenReady().then(() => {
     )
   })
 
-  try {
-
-    const iconPath =
-      path.join(
-        __dirname,
-        'icon.png'
-      )
-
-    const fs =
-      require('fs')
-
-    if (
-      fs.existsSync(iconPath)
-    ) {
-
-      tray =
-        new Tray(iconPath)
-
-      function sendTrayAction(action) {
-        if (win && !win.isDestroyed()) {
-          win.show()
-          win.webContents.send('tray-action', action)
-        }
-      }
-
-      const menu =
-        Menu.buildFromTemplate([
-          {
-            label:
-              'Wesk 보이기',
-
-            click: () => {
-
-              if (win) {
-                win.show()
-              }
-            }
-          },
-
-          {
-            type:
-              'separator'
-          },
-
-          {
-            label: '위젯 추가...',
-            click: () => sendTrayAction('open-modal')
-          },
-
-          {
-            label: '설정 열기',
-            click: () => sendTrayAction('open-settings')
-          },
-
-          {
-            label: '배치 잠금 켜기/끄기',
-            click: () => sendTrayAction('toggle-lock')
-          },
-
-          {
-            type:
-              'separator'
-          },
-
-          {
-            label:
-              '종료',
-
-            click: () => {
-              app.quit()
-            }
-          }
-        ])
-
-      tray.setToolTip(
-        'Wesk 위젯'
-      )
-
-      tray.setContextMenu(
-        menu
-      )
-    }
-
-  } catch (e) {}
 })
 
 app.on(
@@ -1398,6 +1494,15 @@ app.on(
     }
   }
 )
+
+// 앱이 완전히 종료되기 직전에 등록해둔 전역 단축키를 반드시 해제한다.
+// 안 그러면 앱은 꺼졌는데 단축키(Alt+W)는 시스템에 계속 붙잡혀 있어서
+// 다른 프로그램이 같은 조합을 못 쓰게 되는 일이 생길 수 있다.
+app.on('will-quit', () => {
+  try {
+    globalShortcut.unregisterAll()
+  } catch (e) {}
+})
 
 app.on(
   'activate',

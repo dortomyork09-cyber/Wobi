@@ -1360,11 +1360,14 @@ setTimeout(runNudgeCheck,15000)
 // ==========================================
 // 다국어(i18n) — 앱 화면(상단바·설정·테마·위젯 추가 모달 등)을 한국어/영어로.
 // ==========================================
-// 참고: 이 1차 버전은 앱의 "틀"(상단바, 설정 패널, 위젯 추가 모달, 첫 실행 안내)만
-// 영어로 바꿔준다. 위젯 하나하나 내부의 라벨/버튼 텍스트(예: 할일 위젯 안의
-// "완료"버튼 같은 것들)까지 전부 바꾸는 건 위젯 27개 전체의 내부 문자열을
-// 다 뽑아내야 하는 훨씬 큰 작업이라 이번엔 범위에 포함하지 않았다 — 다음
-// 단계로 넘길 수 있는, 정직하게 남겨둔 부분.
+// 앱의 "틀"(상단바, 설정 패널, 위젯 추가 모달, 첫 실행 안내)뿐 아니라 31개
+// 위젯 하나하나 내부의 라벨·버튼·상태 텍스트까지 전부 이 딕셔너리를 거쳐
+// wt()/data-i18n으로 표시한다. 예외 3가지만 의도적으로 한국어 전용으로 둔다:
+// 1) 환율/주식/날씨 위젯 — 한국 실정(원화, 국내 종목 검색 등)에 맞춘 위젯이라
+//    영어 모드에서는 "위젯 추가" 목록에서만 숨긴다(.kr-only, 이미 추가된 위젯은
+//    그대로 유지). 2) console.error(...) 로그 — 화면에 안 뜨고 error.log에만
+//    남는 개발자용 문구라 번역 대상이 아니다. 3) 사용자가 직접 입력한 데이터
+//    (할일·메모·카운터 이름 등) — 앱이 대신 번역해줄 수 없는 내용이라 그대로 둔다.
 const I18N={
   ko:{
     'top.theme':'테마','top.settings':'설정','top.addWidget':'위젯',
@@ -1479,6 +1482,15 @@ const I18N={
     'wi.cap.noContent':'녹화된 내용이 없어요','wi.cap.recSaveFail':'녹화 저장에 실패했어요','wi.cap.startFail':'녹화를 시작할 수 없어요','wi.cap.folderFail':'폴더를 열 수 없어요',
     'wi.alarm.needTime':'시간을 먼저 선택해주세요','wi.alarm.added':'알람이 추가됐어요',
     'wi.translate.translating':'번역 중...','wi.translate.fail':'번역 실패','wi.translate.netErr':'오류: 네트워크 확인',
+    'theme.name.blue':'블루','theme.name.dark':'다크','theme.name.light':'라이트','theme.name.neon':'네온','theme.name.ocean':'오션',
+    'theme.name.sunset':'선셋','theme.name.forest':'포레스트','theme.name.aurora':'오로라','theme.name.cherry':'체리','theme.name.mono':'모노','theme.name.custom':'커스텀',
+    'wi.sports.scheduled':'예정','wi.sports.ended':'종료','wi.sports.live':'진행중','wi.sports.searchTerm':'경기 일정',
+    'wi.cap.stopRec':'중지','wi.cap.countdownShot':'곧 캡처합니다','wi.cap.countdownRec':'녹화를 시작합니다',
+    'wi.calc.error':'오류',
+    'wi.chart.empty':'데이터를 추가해봐',
+    'wi.launcher.noName':'이름 없음',
+    'wi.clip.imgAlt':'복사한 이미지',
+    'common.copied':'복사됨',
   },
   en:{
     'top.theme':'Theme','top.settings':'Settings','top.addWidget':'Widget',
@@ -1593,6 +1605,15 @@ const I18N={
     'wi.cap.noContent':'Nothing was recorded','wi.cap.recSaveFail':'Could not save the recording','wi.cap.startFail':'Could not start recording','wi.cap.folderFail':'Could not open the folder',
     'wi.alarm.needTime':'Choose a time first','wi.alarm.added':'Alarm added',
     'wi.translate.translating':'Translating...','wi.translate.fail':'Translation failed','wi.translate.netErr':'Error: check your connection',
+    'theme.name.blue':'Blue','theme.name.dark':'Dark','theme.name.light':'Light','theme.name.neon':'Neon','theme.name.ocean':'Ocean',
+    'theme.name.sunset':'Sunset','theme.name.forest':'Forest','theme.name.aurora':'Aurora','theme.name.cherry':'Cherry','theme.name.mono':'Mono','theme.name.custom':'Custom',
+    'wi.sports.scheduled':'Scheduled','wi.sports.ended':'Ended','wi.sports.live':'Live','wi.sports.searchTerm':'game schedule',
+    'wi.cap.stopRec':'Stop','wi.cap.countdownShot':'Capturing in a moment','wi.cap.countdownRec':'Starting recording',
+    'wi.calc.error':'Error',
+    'wi.chart.empty':'Try adding some data',
+    'wi.launcher.noName':'No name',
+    'wi.clip.imgAlt':'Copied image',
+    'common.copied':'Copied',
   }
 }
 let currentLang='ko'
@@ -1656,9 +1677,10 @@ function setLang(lang){
   currentLang=lang
   try{localStorage.setItem('wcw-lang',lang)}catch(e){}
   applyI18n()
-  // "사용 안 함" 옵션처럼 data-i18n이 아니라 JS로 직접 채워넣은 텍스트는
-  // applyI18n()이 못 건드리니 따로 다시 그려준다.
+  // "사용 안 함" 옵션이나 테마 스와치 이름처럼 data-i18n이 아니라 JS로 직접
+  // 채워넣은 텍스트는 applyI18n()이 못 건드리니 따로 다시 그려준다.
   try{renderAutoPresetSelect(Object.keys(loadPresets()))}catch(e){}
+  try{renderThemeGrid()}catch(e){}
   // 뉴스 위젯처럼 언어에 따라 기본 소스가 바뀌는 위젯들에게 알려서 즉시 새로고침하게 한다.
   window.dispatchEvent(new CustomEvent('wcw-lang-changed',{detail:{lang}}))
 }
@@ -1837,29 +1859,39 @@ function renderCustomThemeList(){
   })
 }
 
+// n은 더 이상 이름을 직접 담지 않고 I18N 딕셔너리의 'theme.name.<nk>' 키를
+// 가리키기만 한다 — 언어를 바꿔도(setLang) 스와치 이름이 같이 바뀌도록.
 const THEMES=[
-{id:'',       g:'linear-gradient(135deg,#050a14,#1e3a8a,#3b82f6)', n:'블루'},
-{id:'dark',   g:'linear-gradient(135deg,#030711,#1d4ed8)', n:'다크'},
-{id:'light',  g:'linear-gradient(135deg,#dbeafe,#60a5fa)', n:'라이트'},
-{id:'neon',   g:'linear-gradient(135deg,#000510,#0099ff)', n:'네온'},
-{id:'ocean',  g:'linear-gradient(135deg,#000d1a,#0096c7)', n:'오션'},
-{id:'sunset', g:'linear-gradient(135deg,#1a0a00,#f97316)', n:'선셋'},
-{id:'forest', g:'linear-gradient(135deg,#051008,#22c55e)', n:'포레스트'},
-{id:'aurora', g:'linear-gradient(135deg,#050514,#8b5cf6)', n:'오로라'},
-{id:'cherry', g:'linear-gradient(135deg,#150508,#f43f5e)', n:'체리'},
-{id:'mono',   g:'linear-gradient(135deg,#050505,#555)', n:'모노'},
-{id:'custom', g:'linear-gradient(135deg,#3b82f6,#f43f5e,#22c55e)', n:'커스텀'}]
+{id:'',       g:'linear-gradient(135deg,#050a14,#1e3a8a,#3b82f6)', nk:'blue'},
+{id:'dark',   g:'linear-gradient(135deg,#030711,#1d4ed8)', nk:'dark'},
+{id:'light',  g:'linear-gradient(135deg,#dbeafe,#60a5fa)', nk:'light'},
+{id:'neon',   g:'linear-gradient(135deg,#000510,#0099ff)', nk:'neon'},
+{id:'ocean',  g:'linear-gradient(135deg,#000d1a,#0096c7)', nk:'ocean'},
+{id:'sunset', g:'linear-gradient(135deg,#1a0a00,#f97316)', nk:'sunset'},
+{id:'forest', g:'linear-gradient(135deg,#051008,#22c55e)', nk:'forest'},
+{id:'aurora', g:'linear-gradient(135deg,#050514,#8b5cf6)', nk:'aurora'},
+{id:'cherry', g:'linear-gradient(135deg,#150508,#f43f5e)', nk:'cherry'},
+{id:'mono',   g:'linear-gradient(135deg,#050505,#555)', nk:'mono'},
+{id:'custom', g:'linear-gradient(135deg,#3b82f6,#f43f5e,#22c55e)', nk:'custom'}]
 
 const tg=document.getElementById('theme-grid')
-THEMES.forEach(t=>{
-  const b=document.createElement('div')
-  b.className='thb';b.id='tpbtn-'+(t.id||'default')
-  const sw=document.createElement('div');sw.className='sw';sw.style.background=t.g
-  const nm=document.createElement('div');nm.className='nm';nm.textContent=t.n
-  b.appendChild(sw);b.appendChild(nm)
-  b.onclick=()=>setTheme(t.id)
-  tg.appendChild(b)
-})
+// data-i18n으로 처리할 수 없는(JS로 통째로 그리는) 목록이라, setLang()에서
+// 언어를 바꿀 때도 다시 불러서 스와치 이름을 새 언어로 다시 그린다. 현재
+// 선택된 테마의 활성 표시(active)도 저장된 값 기준으로 함께 복원한다.
+function renderThemeGrid(){
+  const activeTh=localStorage.getItem('wcw-theme')||''
+  tg.innerHTML=''
+  THEMES.forEach(t=>{
+    const b=document.createElement('div')
+    b.className='thb'+(t.id===activeTh?' active':'');b.id='tpbtn-'+(t.id||'default')
+    const sw=document.createElement('div');sw.className='sw';sw.style.background=t.g
+    const nm=document.createElement('div');nm.className='nm';nm.textContent=wt('theme.name.'+t.nk)
+    b.appendChild(sw);b.appendChild(nm)
+    b.onclick=()=>setTheme(t.id)
+    tg.appendChild(b)
+  })
+}
+renderThemeGrid()
 
 const SET_KEY='wcw-settings'
 let settings=JSON.parse(localStorage.getItem(SET_KEY)||'{"opacity":88,"autostart":false,"locked":false,"dnd":false,"dndStart":"22:00","dndEnd":"07:00","soundType":"default","autoLoadPreset":""}')
@@ -3492,7 +3524,7 @@ function initHabit(w){
 
 function initCounter(w){
   const K='wcw-counter-'+w.id
-  let d={count:0,label:'클릭해서 이름 변경'}
+  let d={count:0,label:wt('wi.counter.rename')}
   try{d=JSON.parse(localStorage.getItem(K))||d}catch(e){}
   const num=w.querySelector('.cnt-num'),lbl=w.querySelector('.cnt-label')
   function sv(){localStorage.setItem(K,JSON.stringify(d))}
@@ -3674,7 +3706,7 @@ function initNews(w){
       items.slice(0,20).forEach(it=>{
         const te=it.querySelector('title'),se=it.querySelector('source'),le=it.querySelector('link')
         const title=te?te.textContent.replace(/ - [^-]+$/,''):''
-        const src=se?se.textContent:'뉴스'
+        const src=se?se.textContent:wt('w.news')
         const link=le?le.textContent:''
         const d=document.createElement('div');d.className='ni'
         const t=document.createElement('div');t.className='nt';t.textContent=title
@@ -4185,7 +4217,7 @@ function initClipboard(w){
       const row=document.createElement('div');row.className='clip-item'
       if(it.type==='image'){
         row.classList.add('clip-item-img')
-        const im=document.createElement('img');im.className='clip-thumb';im.src=it.data;im.alt='복사한 이미지'
+        const im=document.createElement('img');im.className='clip-thumb';im.src=it.data;im.alt=wt('wi.clip.imgAlt')
         row.appendChild(im)
       }else{
         const tx=document.createElement('div');tx.className='clip-text';tx.textContent=preview(it.text)||wt('wi.clip.emptyText')
@@ -4314,7 +4346,7 @@ function initLauncher(w){
   }
 
   function baseName(p){
-    if(!p)return '이름 없음'
+    if(!p)return wt('wi.launcher.noName')
     const norm=String(p).replace(/[\\/]+$/,'')
     const parts=norm.split(/[\\/]/)
     return parts[parts.length-1]||norm
@@ -4498,7 +4530,7 @@ function initScreencap(w){
     if(shotBtn.disabled||recBtn.disabled)return
     shotBtn.disabled=true
     const restoreText=recording?wt('wi.cap.recording'):wt('wi.cap.idle')
-    await runCountdown('곧 캡처합니다')
+    await runCountdown(wt('wi.cap.countdownShot'))
     statusEl.textContent=wt('wi.cap.capturing')
     try{
       const result=await ipcRenderer.invoke('capture-screenshot')
@@ -4521,7 +4553,7 @@ function initScreencap(w){
   async function startRecording(){
     if(recording||shotBtn.disabled)return
     recBtn.disabled=true
-    await runCountdown('녹화를 시작합니다')
+    await runCountdown(wt('wi.cap.countdownRec'))
     try{
       const source=await ipcRenderer.invoke('get-screen-source')
       if(!source||!source.id){
@@ -4577,7 +4609,7 @@ function initScreencap(w){
       mediaRecorder.start(1000)
       recording=true
       recStartTime=Date.now()
-      recBtn.innerHTML=icHTML('i-video')+'중지'
+      recBtn.innerHTML=icHTML('i-video')+wt('wi.cap.stopRec')
       recBtn.classList.add('primary')
       statusEl.textContent=wt('wi.cap.recording')
       timerEl.textContent='00:00'
@@ -4602,7 +4634,7 @@ function initScreencap(w){
   function stopRecording(){
     if(!recording)return
     recording=false
-    recBtn.innerHTML=icHTML('i-video')+'녹화'
+    recBtn.innerHTML=icHTML('i-video')+wt('wi.cap.rec')
     recBtn.classList.remove('primary')
     timerEl.textContent='00:00'
     if(recTimerId){clearInterval(recTimerId);recTimerId=null}
@@ -4877,7 +4909,7 @@ function initCalc(w){
   w.querySelectorAll('.cbtn2').forEach(b=>b.addEventListener('click',e=>{
     e.stopPropagation();const t=b.textContent
     if(t==='C'){ex='';rs='0'}
-    else if(t==='='){try{rs=String(calc(ex));ex=rs}catch(err){rs='오류';ex=''}}
+    else if(t==='='){try{rs=String(calc(ex));ex=rs}catch(err){rs=wt('wi.calc.error');ex=''}}
     else if(t==='±'){try{rs=String(-parseFloat(rs));ex=rs}catch(err){}}
     else if(t==='%'){try{rs=String(parseFloat(rs)/100);ex=rs}catch(err){}}
     else{
@@ -4890,10 +4922,16 @@ function initCalc(w){
 }
 
 const CVT={
-  length:{units:{'mm':1,'cm':10,'m':1000,'km':1000000,'inch':25.4,'ft':304.8,'yard':914.4,'mile':1609344},names:{'mm':'밀리미터','cm':'센티미터','m':'미터','km':'킬로미터','inch':'인치','ft':'피트','yard':'야드','mile':'마일'}},
-  weight:{units:{'mg':1,'g':1000,'kg':1000000,'t':1000000000,'oz':28349.5,'lb':453592},names:{'mg':'밀리그램','g':'그램','kg':'킬로그램','t':'톤','oz':'온스','lb':'파운드'}},
-  temp:{units:{'C':1,'F':1,'K':1},names:{'C':'섭씨','F':'화씨','K':'켈빈'}},
-  data:{units:{'B':1,'KB':1024,'MB':1048576,'GB':1073741824,'TB':1099511627776},names:{'B':'바이트','KB':'킬로바이트','MB':'메가바이트','GB':'기가바이트','TB':'테라바이트'}}
+  length:{units:{'mm':1,'cm':10,'m':1000,'km':1000000,'inch':25.4,'ft':304.8,'yard':914.4,'mile':1609344},
+    names:{'mm':'밀리미터','cm':'센티미터','m':'미터','km':'킬로미터','inch':'인치','ft':'피트','yard':'야드','mile':'마일'},
+    namesEn:{'mm':'Millimeter','cm':'Centimeter','m':'Meter','km':'Kilometer','inch':'Inch','ft':'Foot','yard':'Yard','mile':'Mile'}},
+  weight:{units:{'mg':1,'g':1000,'kg':1000000,'t':1000000000,'oz':28349.5,'lb':453592},
+    names:{'mg':'밀리그램','g':'그램','kg':'킬로그램','t':'톤','oz':'온스','lb':'파운드'},
+    namesEn:{'mg':'Milligram','g':'Gram','kg':'Kilogram','t':'Ton','oz':'Ounce','lb':'Pound'}},
+  temp:{units:{'C':1,'F':1,'K':1},names:{'C':'섭씨','F':'화씨','K':'켈빈'},namesEn:{'C':'Celsius','F':'Fahrenheit','K':'Kelvin'}},
+  data:{units:{'B':1,'KB':1024,'MB':1048576,'GB':1073741824,'TB':1099511627776},
+    names:{'B':'바이트','KB':'킬로바이트','MB':'메가바이트','GB':'기가바이트','TB':'테라바이트'},
+    namesEn:{'B':'Byte','KB':'Kilobyte','MB':'Megabyte','GB':'Gigabyte','TB':'Terabyte'}}
 }
 
 function initConvert(w){
@@ -4901,7 +4939,7 @@ function initConvert(w){
   const inp=w.querySelector('.cvt-in'),out=w.querySelector('.cvt-out')
   const fs=w.querySelector('.cvt-from'),ts=w.querySelector('.cvt-to'),sw=w.querySelector('.cvt-swap')
   function fillSel(){
-    const u=CVT[cat].units,n=CVT[cat].names
+    const u=CVT[cat].units,n=currentLang==='en'?CVT[cat].namesEn:CVT[cat].names
     fs.innerHTML='';ts.innerHTML=''
     Object.keys(u).forEach(k=>{
       const o1=document.createElement('option');o1.value=k;o1.textContent=n[k];fs.appendChild(o1)
@@ -4909,6 +4947,15 @@ function initConvert(w){
     })
     const ks=Object.keys(u)
     fs.value=ks[0];ts.value=ks[1]||ks[0]
+  }
+  // 언어가 바뀌었을 때는 선택된 단위(mm/kg 등)는 그대로 두고 보이는 이름
+  // (밀리미터/Millimeter)만 다시 그린다 — fillSel()처럼 선택을 초기화하지 않는다.
+  function relabel(){
+    const u=CVT[cat].units,n=currentLang==='en'?CVT[cat].namesEn:CVT[cat].names
+    const fv=fs.value,tv=ts.value
+    Array.from(fs.options).forEach(o=>{o.textContent=n[o.value]})
+    Array.from(ts.options).forEach(o=>{o.textContent=n[o.value]})
+    fs.value=fv;ts.value=tv
   }
   function conv(){
     const v=parseFloat(inp.value)
@@ -4926,7 +4973,7 @@ function initConvert(w){
       out.value=r.toFixed(2)
     }else{
       const u=CVT[cat].units
-      out.value=(v*u[f]/u[t]).toLocaleString('ko-KR',{maximumFractionDigits:6})
+      out.value=(v*u[f]/u[t]).toLocaleString(currentLang==='en'?'en-US':'ko-KR',{maximumFractionDigits:6})
     }
   }
   w.querySelectorAll('.cvt-cbtn').forEach(b=>b.addEventListener('click',e=>{
@@ -4940,6 +4987,13 @@ function initConvert(w){
     el.addEventListener('change',conv)
   })
   sw.addEventListener('click',e=>{e.stopPropagation();const t=fs.value;fs.value=ts.value;ts.value=t;conv()})
+  const onLangChange=()=>{relabel();conv()}
+  window.addEventListener('wcw-lang-changed',onLangChange)
+  const prevCleanup=w._cleanup
+  w._cleanup=function(){
+    window.removeEventListener('wcw-lang-changed',onLangChange)
+    if(prevCleanup)prevCleanup()
+  }
   fillSel();conv()
 }
 
@@ -5014,14 +5068,46 @@ const QUOTES=[
 ['오늘 하루도 잘 버텼다. 그거면 충분해.','작자 미상'],
 ['꾸준함이 재능을 이긴다.','작자 미상']]
 
+// 한국어 명언과 1:1로 번역한 게 아니라, 영어권에서 널리 알려진 명언들로
+// 따로 구성했다 — WMO_MAP/WMO_MAP_EN처럼 언어별로 독립된 콘텐츠 세트.
+const QUOTES_EN=[
+['Success is not final, failure is not fatal: it is the courage to continue that counts.','Winston Churchill'],
+['Whether you think you can, or you think you can\'t – you\'re right.','Henry Ford'],
+['The best time to plant a tree was 20 years ago. The second best time is now.','Chinese Proverb'],
+['Well begun is half done.','Aristotle'],
+['A journey of a thousand miles begins with a single step.','Lao Tzu'],
+['Failure is simply the opportunity to begin again, this time more intelligently.','Henry Ford'],
+['The biggest risk is not taking any risk.','Mark Zuckerberg'],
+['If you can dream it, you can do it.','Walt Disney'],
+['Live as if you were to die tomorrow. Learn as if you were to live forever.','Mahatma Gandhi'],
+['Comparison is the thief of joy.','Theodore Roosevelt'],
+['Hard work beats talent when talent doesn\'t work hard.','Tim Notke'],
+['I have not failed. I\'ve just found 10,000 ways that won\'t work.','Thomas Edison'],
+['Action is the foundational key to all success.','Pablo Picasso'],
+['The future belongs to those who believe in the beauty of their dreams.','Eleanor Roosevelt'],
+['Chance favors the prepared mind.','Louis Pasteur'],
+['It is never too late to be what you might have been.','George Eliot'],
+['Whatever you do, do it well.','Walt Disney'],
+['Try not to become a person of success, but rather try to become a person of value.','Albert Einstein'],
+['You showed up today. That\'s enough.','Unknown'],
+['Consistency beats talent when talent doesn\'t stay consistent.','Unknown']]
+
 function initQuote(w){
   const tx=w.querySelector('.quote-text'),au=w.querySelector('.quote-author'),bt=w.querySelector('.quote-btn')
   function pick(){
-    const q=QUOTES[Math.floor(Math.random()*QUOTES.length)]
+    const list=currentLang==='en'?QUOTES_EN:QUOTES
+    const q=list[Math.floor(Math.random()*list.length)]
     tx.textContent='"'+q[0]+'"'
     au.textContent='— '+q[1]
   }
   bt.addEventListener('click',e=>{e.stopPropagation();pick()})
+  const onLangChange=()=>pick()
+  window.addEventListener('wcw-lang-changed',onLangChange)
+  const prevCleanup=w._cleanup
+  w._cleanup=function(){
+    window.removeEventListener('wcw-lang-changed',onLangChange)
+    if(prevCleanup)prevCleanup()
+  }
   pick()
 }
 
@@ -5109,15 +5195,15 @@ function initColorpick(w){
       upd()
     }
   })
-  function flash(btn,orig){btn.innerHTML=icHTML('i-check')+'복사됨';setTimeout(()=>{btn.innerHTML=icHTML('i-copy')+orig},1200)}
+  function flash(btn,orig){btn.innerHTML=icHTML('i-check')+wt('common.copied');setTimeout(()=>{btn.innerHTML=icHTML('i-copy')+orig},1200)}
   cpHex.addEventListener('click',e=>{
     e.stopPropagation()
-    navigator.clipboard.writeText(hex.value).then(()=>flash(cpHex,'HEX 복사')).catch(()=>{})
+    navigator.clipboard.writeText(hex.value).then(()=>flash(cpHex,wt('wi.color.copyHex'))).catch(()=>{})
   })
   cpRgb.addEventListener('click',e=>{
     e.stopPropagation()
     const s='rgb('+R.value+', '+G.value+', '+B.value+')'
-    navigator.clipboard.writeText(s).then(()=>flash(cpRgb,'RGB 복사')).catch(()=>{})
+    navigator.clipboard.writeText(s).then(()=>flash(cpRgb,wt('wi.color.copyRgb'))).catch(()=>{})
   })
   upd()
 }
@@ -5140,7 +5226,7 @@ function initChart(w){
     c.clearRect(0,0,cw,ch)
     if(!data.length){
       c.fillStyle=sc;c.font='11px sans-serif';c.textAlign='center';c.textBaseline='middle'
-      c.fillText('데이터를 추가해봐',cw/2,ch/2);return
+      c.fillText(wt('wi.chart.empty'),cw/2,ch/2);return
     }
     const max=Math.max.apply(null,data.map(d=>d.v))||1
     const pad=18,bw=(cw-pad*2)/data.length
@@ -5295,17 +5381,21 @@ function initSnake(w){
 // ===== 스포츠 통합 위젯 =====
 // 날짜 선택 없이, 최근 경기 + 앞으로 예정된 경기들을 최대한 많이 표시한다.
 // ESPN: NBA/MLB/NFL/NHL/EPL/라리가/세리에A/분데스/챔스
+// nameEn이 name과 다른 4개(라리가/세리에A/분데스/챔스)만 영어 모드에서 다른
+// 이름으로 표시된다 — 나머지는 원래도 영어 약자(NBA 등)라 그대로 쓴다.
 const SPORTS_LIST=[
-  {id:'nba',name:'NBA',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',search:'NBA 경기 일정'},
-  {id:'mlb',name:'MLB',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',search:'MLB 경기 일정'},
-  {id:'nfl',name:'NFL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard',search:'NFL 경기 일정'},
-  {id:'nhl',name:'NHL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard',search:'NHL 경기 일정'},
-  {id:'epl',name:'EPL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard',search:'EPL 경기 일정'},
-  {id:'laliga',name:'라리가',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard',search:'라리가 경기 일정'},
-  {id:'seriea',name:'세리에A',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard',search:'세리에A 경기 일정'},
-  {id:'bundes',name:'분데스',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard',search:'분데스리가 경기 일정'},
-  {id:'ucl',name:'챔스',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard',search:'UEFA 챔피언스리그 경기 일정'}
+  {id:'nba',name:'NBA',nameEn:'NBA',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard'},
+  {id:'mlb',name:'MLB',nameEn:'MLB',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'},
+  {id:'nfl',name:'NFL',nameEn:'NFL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'},
+  {id:'nhl',name:'NHL',nameEn:'NHL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'},
+  {id:'epl',name:'EPL',nameEn:'EPL',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard'},
+  {id:'laliga',name:'라리가',nameEn:'La Liga',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard'},
+  {id:'seriea',name:'세리에A',nameEn:'Serie A',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard'},
+  {id:'bundes',name:'분데스',nameEn:'Bundesliga',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard'},
+  {id:'ucl',name:'챔스',nameEn:'Champions League',kind:'espn',api:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard'}
 ]
+function spName(sp){return currentLang==='en'?(sp.nameEn||sp.name):sp.name}
+function spSearchTerm(sp){return spName(sp)+' '+wt('wi.sports.searchTerm')}
 
 function spDateKey(d){
   const x=new Date(d);x.setHours(0,0,0,0)
@@ -5317,16 +5407,18 @@ function spRange(daysBack,daysForward){
   return spDateKey(a)+'-'+spDateKey(b)
 }
 function spGoogle(q){
-  return 'https://www.google.com/search?hl=ko&gl=KR&q='+encodeURIComponent(q)
+  return currentLang==='en'
+    ? 'https://www.google.com/search?hl=en&q='+encodeURIComponent(q)
+    : 'https://www.google.com/search?hl=ko&gl=KR&q='+encodeURIComponent(q)
 }
 function spGoogleGame(g){
   const dt=g.date?new Date(g.date):null
   const dateText=dt&&!isNaN(dt)
-    ? dt.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'})
+    ? dt.toLocaleDateString(currentLang==='en'?'en-US':'ko-KR',{year:'numeric',month:'long',day:'numeric'})
     : ''
   const league=g.league||g.leagueName||''
   // 팀명/리그/날짜를 모두 넣어 Google이 경기 자체를 찾도록 한다.
-  const q=['"'+(g.home||'')+'"','"'+(g.away||'')+'"',league,dateText,'경기 일정']
+  const q=['"'+(g.home||'')+'"','"'+(g.away||'')+'"',league,dateText,wt('wi.sports.searchTerm')]
     .filter(Boolean).join(' ')
   return spGoogle(q)
 }
@@ -5343,10 +5435,13 @@ function parseESPN(data){
       const live=st.state==='in'||/live|in progress/i.test(st.description||'')
       const done=!!st.completed
       const dt=ev.date?new Date(ev.date):null
-      let stTxt='예정'
-      if(done)stTxt='종료'
-      else if(live)stTxt='● 진행중 '+(ev.status.displayClock||'')
-      else if(dt&&!isNaN(dt))stTxt=dt.toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'})+' '+dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+      let stTxt=wt('wi.sports.scheduled')
+      if(done)stTxt=wt('wi.sports.ended')
+      else if(live)stTxt='● '+wt('wi.sports.live')+' '+(ev.status.displayClock||'')
+      else if(dt&&!isNaN(dt)){
+        const loc=currentLang==='en'?'en-US':'ko-KR'
+        stTxt=dt.toLocaleDateString(loc,{month:'numeric',day:'numeric'})+' '+dt.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'})
+      }
       const info=t=>({
         name:t.team?.shortDisplayName||t.team?.displayName||t.team?.name||'?',
         logo:t.team?.logo||t.team?.logos?.[0]?.href||'',
@@ -5736,20 +5831,24 @@ function initSports(w){
   let cur=localStorage.getItem('wcw-sports-league')||'nba',loading=false
   if(!SPORTS_LIST.some(x=>x.id===cur))cur='nba'
 
-  SPORTS_LIST.forEach(sp=>{
-    const b=document.createElement('button')
-    b.className='sp-tab'+(sp.id===cur?' active':'')
-    b.textContent=sp.name
-    b.addEventListener('click',e=>{
-      e.stopPropagation()
-      cur=sp.id
-      localStorage.setItem('wcw-sports-league',cur)
-      tabs.querySelectorAll('.sp-tab').forEach(x=>x.classList.remove('active'))
-      b.classList.add('active')
-      load()
+  function renderTabs(){
+    tabs.innerHTML=''
+    SPORTS_LIST.forEach(sp=>{
+      const b=document.createElement('button')
+      b.className='sp-tab'+(sp.id===cur?' active':'')
+      b.textContent=spName(sp)
+      b.addEventListener('click',e=>{
+        e.stopPropagation()
+        cur=sp.id
+        localStorage.setItem('wcw-sports-league',cur)
+        tabs.querySelectorAll('.sp-tab').forEach(x=>x.classList.remove('active'))
+        b.classList.add('active')
+        load()
+      })
+      tabs.appendChild(b)
     })
-    tabs.appendChild(b)
-  })
+  }
+  renderTabs()
 
   async function load(){
     if(loading)return
@@ -5814,7 +5913,7 @@ function initSports(w){
         b.textContent=wt('wi.sports.searchGoogle')
         b.addEventListener('click',e=>{
           e.stopPropagation()
-          shell.openExternal(spGoogle(conf.search))
+          shell.openExternal(spGoogle(spSearchTerm(conf)))
         })
         list.appendChild(b)
       }else{
@@ -5825,7 +5924,7 @@ function initSports(w){
         })
       }
 
-      const timeTxt=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})
+      const timeTxt=new Date().toLocaleTimeString(currentLang==='en'?'en-US':'ko-KR',{hour:'2-digit',minute:'2-digit'})
       upd.textContent = wt('wi.common.updated')+timeTxt
     }catch(e){
       list.innerHTML=''
@@ -5847,6 +5946,15 @@ function initSports(w){
   setTimeout(load,staggerDelay())
   // 진행중인 경기의 점수가 빠르게 반영되도록 30초마다 새로고침한다.
   regTimer(w,setInterval(load,30*1000))
+  // 언어가 바뀌면 탭 이름(라리가/La Liga 등)과 경기 상태 문구(예정/Scheduled 등)를
+  // 새 언어로 다시 그린다.
+  const onLangChange=()=>{renderTabs();load()}
+  window.addEventListener('wcw-lang-changed',onLangChange)
+  const prevCleanup=w._cleanup
+  w._cleanup=function(){
+    window.removeEventListener('wcw-lang-changed',onLangChange)
+    if(prevCleanup)prevCleanup()
+  }
 }
 
 // WMO(세계기상기구) 날씨 코드 -> [한글 설명, 이모지]. open-meteo가 이 코드
