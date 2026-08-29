@@ -80,6 +80,33 @@ body::before{display:none !important;content:none !important;}
 .rh::after{content:'';position:absolute;right:4px;bottom:4px;width:6px;height:6px;border-right:1.5px solid var(--c3);border-bottom:1.5px solid var(--c3);transition:border-color .2s}
 .rh:hover::after{border-color:var(--c5)}
 
+/* ══ 위젯 "항상 위에 표시"(핀) 전용 창 ══
+   메인 오버레이 창이 아니라, 위젯 하나만 담아 다른 프로그램들 위에 항상 떠있는
+   아주 작은 별도 창에서만 붙는 body.pinned-mode 스타일. 탑바·모달·패널·튜토리얼·
+   마스코트처럼 메인 창에만 필요한 UI는 다 숨기고, 위젯 헤더(.wl)를 OS 창을
+   드래그하는 손잡이로 쓴다(-webkit-app-region). 리사이즈는 창 가장자리를 직접
+   끄는 걸로 대신하므로 기존 리사이즈 손잡이(.rh)는 숨긴다. */
+body.pinned-mode .topbar,
+body.pinned-mode #modal,
+body.pinned-mode #ctx-menu,
+body.pinned-mode #cpick,
+body.pinned-mode #wopac,
+body.pinned-mode #theme-panel,
+body.pinned-mode #settings-panel,
+body.pinned-mode #tourSpot,
+body.pinned-mode #tourCard,
+body.pinned-mode .mascot{display:none !important}
+body.pinned-mode{background:transparent}
+body.pinned-mode .widget{cursor:default}
+body.pinned-mode .widget .rh{display:none !important}
+body.pinned-mode .widget .wl{-webkit-app-region:drag;cursor:move}
+body.pinned-mode .widget .wl button,
+body.pinned-mode .widget .wl input,
+body.pinned-mode .widget .wl select{-webkit-app-region:no-drag}
+/* 개별 잠금(🔒) 배지는 "위치·크기 고정" 기능용인데, 핀 창에선 드래그/리사이즈가
+   애초에 창 자체를 통해서만 일어나서 그 배지가 의미가 없다 — 혼동만 주니 숨김. */
+body.pinned-mode .widget[data-locked="1"]::after{display:none}
+
 /* ══ 위젯 "핀" 장식 — 그냥 색만 다른 네모가 아니라 코르크보드에 압정으로 꽂아둔 느낌을 준다 ══
    (.widget에 overflow:hidden이 걸려있어 테두리 밖으로 튀어나오면 잘리므로 안쪽 여백에 배치) */
 .widget::before{
@@ -836,6 +863,7 @@ body.lang-en .kr-only{display:none}
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-ruler" viewBox="0 0 24 24"><path d="M16 2l6 6L8 22l-6-6z"/><path d="M7 17l-2-2M11 13l-2-2M15 9l-2-2"/></symbol>
 <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 21V4M4 4h13l-2 4 2 4H4"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2v6l4 3v2H8v-2l4-3z"/><path d="M12 13v9"/><circle cx="12" cy="6" r="2.2"/></symbol>
 <symbol id="i-quote" viewBox="0 0 24 24"><path d="M8 6c-2.5 0-4 2-4 4.5S5.5 15 8 15v3c-4 0-6-3-6-7.5S4.5 3 8 3z"/><path d="M20 6c-2.5 0-4 2-4 4.5s1.5 4.5 4 4.5v3c-4 0-6-3-6-7.5S16.5 3 20 3z"/></symbol>
 <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol>
 <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18 14 14 0 010-18z"/></symbol>
@@ -940,6 +968,10 @@ body.lang-en .kr-only{display:none}
     <input type="time" class="lk-field" id="dndStartIn" style="max-width:110px">
     <span style="color:var(--lc);font-size:11px" data-i18n="set.dnd.to">~</span>
     <input type="time" class="lk-field" id="dndEndIn" style="max-width:110px">
+  </div>
+  <div class="set-row">
+    <div><div class="set-l" data-i18n="set.nudge.l">넛지 알림</div><div class="set-s" data-i18n="set.nudge.s">남은 할일이나 오늘 D-day를 가끔 알려드려요</div></div>
+    <button type="button" class="tog" id="nudge-toggle"></button>
   </div>
   <div class="set-row">
     <div><div class="set-l" data-i18n="set.presetSave.l">레이아웃 저장</div><div class="set-s" data-i18n="set.presetSave.s">지금 위젯 배치를 이름 붙여 저장</div></div>
@@ -1048,6 +1080,7 @@ body.lang-en .kr-only{display:none}
   <div class="ctx-i" id="ctxColorClearItem" onclick="clearWidgetColor()" style="display:none"><svg class="ic"><use href="#i-x"/></svg><span id="ctxColorClearLabel">위젯 색상 초기화</span></div>
   <div class="ctx-i" onclick="pickWidgetOpacity(event)"><svg class="ic"><use href="#i-eye"/></svg><span id="ctxOpacityLabel">위젯 투명도</span></div>
   <div class="ctx-i" id="ctxLockItem" onclick="toggleWidgetLock()"><svg class="ic"><use href="#i-lock"/></svg><span id="ctxLockLabel">이 위젯 잠금</span></div>
+  <div class="ctx-i" id="ctxPinItem" onclick="pinWidgetFromCtx()"><svg class="ic"><use href="#i-pin"/></svg><span id="ctxPinLabel">항상 위에 표시</span></div>
   <div class="ctx-i dgr" onclick="delWidget()"><svg class="ic"><use href="#i-trash"/></svg><span id="ctxDeleteLabel">위젯 삭제</span></div>
 </div>
 <input type="file" id="widgetBgFileInput" accept="image/*" style="display:none">
@@ -1063,7 +1096,7 @@ body.lang-en .kr-only{display:none}
 <div class="mascot" id="mascot" aria-hidden="true"></div>
 <div class="tour-spot" id="tourSpot"></div>
 <div class="tour-card" id="tourCard">
-  <div class="tour-step-label" id="tourStepLabel">1 / 8</div>
+  <div class="tour-step-label" id="tourStepLabel">1 / 9</div>
   <div class="tour-title" id="tourTitle"></div>
   <div class="tour-desc" id="tourDesc"></div>
   <div class="tour-dots" id="tourDots"></div>
@@ -1100,6 +1133,21 @@ const DEFAULT_SIZE={
   minesweeper:{width:'250px',height:'300px'},
   tictactoe:{width:'200px',height:'250px'}
 }
+
+// ── 위젯 "항상 위에 표시"(핀) 창 여부 ──
+// 이 index.html은 두 가지 창에서 재사용된다: 평소의 메인 오버레이 창(가상
+// 데스크톱 전체를 덮음)과, 위젯 하나를 핀했을 때 그 위젯 전용으로 새로 뜨는
+// 아주 작은 창. main.js가 후자를 열 때 'index.html?pinned=<위젯id>'로
+// loadFile을 호출하므로, 그 쿼리 파라미터 존재 여부로 지금 이 창이 어느
+// 쪽인지 판정한다. skipAutoSave/DEFAULT_SIZE와 마찬가지로 스크립트 곳곳의
+// 함수(사실상 스크립트 로딩 도중에도 참조될 수 있음)보다 반드시 먼저
+// 초기화돼야 해서 맨 위에 둔다.
+const PINNED_ID=(function(){
+  try{return new URLSearchParams(location.search).get('pinned')}catch(e){return null}
+})()
+// 핀 창에서 OS 리사이즈 이벤트가 폭주해도 프레임당 한 번만 위젯 크기를
+// 맞추도록 묶어주는 플래그 (setupPinnedWidgetWindow에서 사용).
+let _pinFitRaf=false
 
 // ==========================================
 // 화면(렌더러) 쪽 에러도 로그 파일에 남기기
@@ -1211,48 +1259,49 @@ function renderBoldHtml(raw){
   return escapeHtml(raw).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
 }
 
-// ── 트레이 아이콘 hover에 다음 알람/타이머 보여주기 ──
-// 타이머/뽀모도로는 실행 중인 위젯 안에서만 상태를 들고 있어서, 트레이(메인
-// 프로세스)에서 보이게 하려면 렌더러 쪽에 "지금 몇 개가 몇 시에 끝나는지"를
-// 모아두는 곳이 하나 필요하다. 위젯이 시작/정지/완료될 때마다 이 레지스트리를
-// 갱신해두고, 30초마다 + 시작 직후 한 번 계산해서 메인 프로세스로 보낸다.
+// ── 실행 중인 타이머/뽀모도로 레지스트리 ──
+// 타이머/뽀모도로는 실행 중인 위젯 안에서만 상태를 들고 있어서, 위젯이
+// 시작/정지/완료될 때마다 이 레지스트리를 갱신해둔다(다른 곳에서 "지금 몇
+// 개가 몇 시에 끝나는지"를 알아야 할 때 쓸 수 있게).
 window._activeCountdowns=window._activeCountdowns||{}
 function regCountdown(id,label,endsAt){window._activeCountdowns[id]={label,endsAt}}
 function unregCountdown(id){delete window._activeCountdowns[id]}
-function updateTrayTooltip(){
+// 할일 위젯은 위젯마다 따로(wcw-todo-<id>) 저장돼있어서, "안 끝낸 할일
+// 개수"를 구하려면 localStorage를 전부 훑어야 한다.
+function getPendingTodoCount(){
+  let n=0
   try{
-    const now=Date.now()
-    let best=null
-    Object.values(window._activeCountdowns).forEach(c=>{
-      if(c.endsAt>now&&(!best||c.endsAt<best.atMs))best={label:c.label,atMs:c.endsAt,kind:'timer'}
-    })
     for(let i=0;i<localStorage.length;i++){
       const key=localStorage.key(i)
-      if(!key||key.indexOf('wcw-alarm-')!==0)continue
+      if(!key||key.indexOf('wcw-todo-')!==0)continue
       let arr=[]
       try{arr=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){continue}
       if(!Array.isArray(arr))continue
-      arr.forEach(a=>{
-        if(!a||a.on===false||!a.time)return
-        const parts=a.time.split(':').map(Number)
-        if(parts.length!==2||isNaN(parts[0])||isNaN(parts[1]))return
-        const d=new Date();d.setHours(parts[0],parts[1],0,0)
-        if(d.getTime()<=now)d.setDate(d.getDate()+1)
-        if(!best||d.getTime()<best.atMs)best={label:(a.label||wt('w.alarm')),atMs:d.getTime(),kind:'alarm'}
-      })
+      arr.forEach(t=>{if(t&&!t.done)n++})
     }
-    let tip='Wesk 위젯'
-    if(best){
-      const mins=Math.max(0,Math.round((best.atMs-now)/60000))
-      const timeStr=new Date(best.atMs).toTimeString().slice(0,5)
-      tip=(best.kind==='alarm'?'⏰ ':'⏱️ ')+best.label+' · '+timeStr+' ('+wt('wi.tray.minLater',{n:mins})+')'
-    }
-    ipcRenderer.send('update-tray-tooltip',tip)
   }catch(e){}
+  return n
 }
-setInterval(updateTrayTooltip,30000)
-setTimeout(updateTrayTooltip,2000)
-
+// D-day 중 오늘이거나 앞으로 다가오는 것 중 제일 가까운 것 하나만 뽑는다
+// (지나간 D-day는 넛지 알림에선 의미가 없어서 제외).
+function getNearestDday(){
+  try{
+    const list=getAllDdays()
+    const now=new Date()
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate())
+    let nearest=null
+    list.forEach(d=>{
+      if(!d||!d.date)return
+      const parts=String(d.date).split('-').map(Number)
+      if(parts.length!==3)return
+      const target=new Date(parts[0],parts[1]-1,parts[2])
+      const diff=Math.round((target-today)/(1000*60*60*24))
+      if(diff<0)return
+      if(!nearest||diff<nearest.diff)nearest={name:d.name,diff}
+    })
+    return nearest
+  }catch(e){return null}
+}
 // ── 데스크톱 알림(OS 토스트) ──
 // Electron 렌더러에서도 표준 Web Notification API가 그대로 OS 알림으로 뜬다.
 // 소리는 위 beep()로 이미 내고 있어서, 알림 자체 소리는 죽여서(silent) 중복을 막는다.
@@ -1268,6 +1317,45 @@ function notify(title,body){
     }
   }catch(e){}
 }
+
+// ── 넛지 알림 ──
+// 위젯을 켜놓고도 "볼 일이 없어서" 잘 안 쓰게 된다는 피드백을 반영해서,
+// 존재를 가끔 상기시켜주는 알림 두 가지를 추가한다.
+// 1) 오늘이 D-day인 항목이 있으면 하루에 한 번만 축하 알림
+// 2) 안 끝낸 할일이 있으면 일정 간격(NUDGE_INTERVAL_MS)마다 리마인드
+// 둘 다 설정에서 끌 수 있고(settings.nudge), 방해금지 시간대(isDndActive)엔
+// 조용히 넘어간다. 알림 자체가 앱을 계속 쓰게 만드는 게 목적이라, 너무 잦으면
+// 오히려 거슬려서 꺼버릴 수 있으므로 최소 간격을 넉넉하게 잡는다.
+const NUDGE_INTERVAL_MS=3*60*60*1000 // 3시간
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function maybeSendDdayNudge(){
+  if(!settings.nudge||isDndActive())return
+  const lastDate=localStorage.getItem('wcw-nudge-dday-date')
+  const today=todayStr()
+  if(lastDate===today)return // 오늘 이미 알렸으면 또 안 알림
+  const d=getNearestDday()
+  if(!d||d.diff!==0)return
+  notify('Wesk · '+wt('nudge.ddayTitle'),wt('nudge.ddayBody',{name:d.name}))
+  localStorage.setItem('wcw-nudge-dday-date',today)
+}
+function maybeSendTodoNudge(){
+  if(!settings.nudge||isDndActive())return
+  const n=getPendingTodoCount()
+  if(n<=0)return
+  const last=Number(localStorage.getItem('wcw-nudge-todo-at')||0)
+  if(Date.now()-last<NUDGE_INTERVAL_MS)return
+  notify('Wesk',wt('nudge.todoBody',{n}))
+  localStorage.setItem('wcw-nudge-todo-at',String(Date.now()))
+}
+function runNudgeCheck(){
+  try{maybeSendDdayNudge()}catch(e){}
+  try{maybeSendTodoNudge()}catch(e){}
+}
+// D-day 체크는 자정 넘어가는 걸 놓치지 않게 자주(10분마다) 확인하되, 실제로
+// 알림이 나가는 건 위 날짜 가드 덕분에 하루 한 번뿐이다. 할일 리마인드는
+// 3시간 간격 가드가 있으니 같은 주기로 같이 확인해도 무방하다.
+setInterval(runNudgeCheck,10*60*1000)
+setTimeout(runNudgeCheck,15000)
 
 // ==========================================
 // 다국어(i18n) — 앱 화면(상단바·설정·테마·위젯 추가 모달 등)을 한국어/영어로.
@@ -1289,6 +1377,8 @@ const I18N={
     'set.autostart.l':'자동 실행','set.autostart.s':'컴퓨터 켤 때 함께 시작',
     'set.lock.l':'배치 잠금','set.lock.s':'위치와 크기 고정',
     'set.dnd.l':'방해금지 시간대','set.dnd.s':'이 시간엔 알람·타이머 알림을 조용히 넘겨요','set.dnd.to':'~',
+    'set.nudge.l':'넛지 알림','set.nudge.s':'남은 할일이나 오늘 D-day를 가끔 알려드려요',
+    'nudge.todoBody':'할일 {n}개 남았어요','nudge.ddayTitle':'오늘이에요!','nudge.ddayBody':'{name} · D-Day',
     'set.presetSave.l':'레이아웃 저장','set.presetSave.s':'지금 위젯 배치를 이름 붙여 저장',
     'set.autoPreset.l':'시작 시 자동 불러오기','set.autoPreset.s':'앱을 켤 때 이 레이아웃으로 자동 시작','set.autoPreset.off':'사용 안 함',
     'set.sound.l':'알림 소리','set.sound.s':'타이머·뽀모도로·알람이 다 됐을 때 나는 소리',
@@ -1312,8 +1402,9 @@ const I18N={
     'tour.4.title':'우클릭으로 꾸미기','tour.4.desc':'위젯을 <b>우클릭</b>하면 색상·투명도·배경 이미지·잠금·삭제 메뉴가 떠요. 위젯마다 따로 꾸며보세요.',
     'tour.5.title':'테마','tour.5.desc':'여기서 전체 테마(색상)를 바꾸거나, 직접 색을 골라 나만의 테마를 만들 수 있어요.',
     'tour.6.title':'설정','tour.6.desc':'투명도·배치 잠금·방해금지 시간대·백업/복원 같은 옵션은 전부 여기 있어요. 이 안내도 <b>설정</b>에서 언제든 다시 볼 수 있어요.',
-    'tour.7.title':'트레이 아이콘','tour.7.desc':'화면 아래 트레이 아이콘을 <b>우클릭</b>하면 위젯 추가·설정 열기·종료를 빠르게 할 수 있어요.',
-    'tour.8.title':'준비 완료!','tour.8.desc':'이제 자유롭게 위젯을 추가해보세요. 이 안내는 설정 → "첫 실행 안내 다시보기"에서 언제든 다시 볼 수 있어요.',
+    'tour.8.title':'단축키로 빠르게 소환','tour.8.desc':'다른 창으로 화면이 꽉 차 있어도 <b>Alt+W</b>를 누르면 위젯들이 잠깐 맨 앞으로 떠올라요. 바탕화면까지 갈 필요 없이 바로 확인하고, 다른 곳을 클릭하면 자동으로 다시 내려가요.',
+    'tour.7.title':'위젯 고정하기','tour.7.desc':'위젯을 <b>우클릭</b>한 뒤 "항상 위에 표시"를 누르면, 그 위젯만 작은 창으로 떨어져 나와서 다른 프로그램(브라우저, 게임 등) 위에도 항상 떠있게 고정할 수 있어요. 다시 우클릭하면 "고정 해제"로 원래 자리로 돌아와요.',
+    'tour.9.title':'준비 완료!','tour.9.desc':'이제 자유롭게 위젯을 추가해보세요. 이 안내는 설정 → "첫 실행 안내 다시보기"에서 언제든 다시 볼 수 있어요.',
     'confirm.reset':'모든 위젯과 저장된 데이터가 삭제됩니다. 계속할까요?',
     'preset.promptName':'이 배치를 어떤 이름으로 저장할까요?',
     'preset.empty':'아직 저장된 레이아웃이 없어요',
@@ -1362,13 +1453,13 @@ const I18N={
     'wi.pomo.shortBreak':'짧은 휴식','wi.pomo.longBreak':'긴 휴식','wi.pomo.doneCount':'완료 {n}',
     'wi.pomo.notifyWork':'휴식 끝! 다시 집중할 시간이에요','wi.pomo.notifyBreak':'수고했어요, 휴식 시간이에요',
     'wi.alarm.empty':'시간을 등록해서 알람을 추가해보세요','wi.alarm.notifyBody':'{time} 알람이에요',
-    'wi.tray.minLater':'{n}분 후',
     'wi.snake.score':'점수 {n}','wi.snake.best':'최고 {n}','wi.snake.restart':'다시 시작','wi.snake.stop':'정지',
     'wi.sports.loading':'진행중인 경기와 전체 일정을 많이 불러오는 중...','wi.sports.noGames':'현재 표시할 경기가 없습니다.\nGoogle에서 전체 일정을 확인할 수 있어요.',
     'wi.sports.searchGoogle':'Google에서 일정 검색','wi.sports.fetchFail':'경기 데이터를 불러오지 못했습니다.\n네트워크를 확인하고 다시 시도해주세요.',
     'wi.weather.feelsLike':'체감','wi.weather.humidity':'습도','wi.weather.wind':'바람','wi.weather.today':'오늘',
     'wi.weather.high':'최고','wi.weather.low':'최저','wi.weather.fetchFail':'날씨를 불러오지 못했어요','wi.weather.cityNotFound':'도시를 찾지 못했어요. 다른 이름으로 시도해보세요',
     'ctx.lockWidget':'이 위젯 잠금','ctx.unlockWidget':'이 위젯 잠금 해제','ctx.deleteWidget':'위젯 삭제',
+    'ctx.pinWidget':'항상 위에 표시','ctx.unpinWidget':'핀 해제',
     'ctx.lockGroup':'선택한 {n}개 잠금','ctx.unlockGroup':'선택한 {n}개 잠금 해제',
     'ctx.setBg':'배경 이미지 설정','ctx.clearBg':'배경 이미지 지우기',
     'ctx.setColor':'위젯 색상 설정','ctx.clearColor':'위젯 색상 초기화',
@@ -1400,6 +1491,8 @@ const I18N={
     'set.autostart.l':'Start with Windows','set.autostart.s':'Launch automatically when your PC starts',
     'set.lock.l':'Lock layout','set.lock.s':'Fix position and size',
     'set.dnd.l':'Quiet hours','set.dnd.s':'Skip alarm/timer sounds and notifications during this time','set.dnd.to':'to',
+    'set.nudge.l':'Nudge reminders','set.nudge.s':'Occasional reminders about leftover to-dos or today\'s D-day',
+    'nudge.todoBody':'{n} to-dos left','nudge.ddayTitle':'It\'s today!','nudge.ddayBody':'{name} · D-Day',
     'set.presetSave.l':'Save layout','set.presetSave.s':'Save the current widget layout under a name',
     'set.autoPreset.l':'Auto-load on startup','set.autoPreset.s':'Start with this layout every time you open the app','set.autoPreset.off':'Off',
     'set.sound.l':'Alert sound','set.sound.s':'The sound played when a timer, pomodoro, or alarm finishes',
@@ -1423,8 +1516,9 @@ const I18N={
     'tour.4.title':'Right-click to customize','tour.4.desc':'Right-click a widget for color, opacity, background image, lock, and delete options — customize each one separately.',
     'tour.5.title':'Themes','tour.5.desc':'Switch the whole app\'s color theme here, or pick your own colors to make a custom one.',
     'tour.6.title':'Settings','tour.6.desc':'Opacity, layout lock, do-not-disturb hours, backup/restore — all the options live here. You can replay this tour anytime from <b>Settings</b>.',
-    'tour.7.title':'Tray icon','tour.7.desc':'<b>Right-click</b> the tray icon in your taskbar for quick actions — add a widget, open settings, or quit.',
-    'tour.8.title':'You\'re all set!','tour.8.desc':'Go ahead and add your first widget. You can replay this tour anytime from Settings → "Replay first-run tour".',
+    'tour.8.title':'Summon with a hotkey','tour.8.desc':'Even with other windows filling the screen, press <b>Alt+W</b> and your widgets pop to the front for a moment. No need to go to the desktop — click elsewhere and they drop back down automatically.',
+    'tour.7.title':'Pin a widget','tour.7.desc':'Right-click any widget and choose "Always on top" to pop it into its own small window that stays above everything else — even other apps. Right-click it again and choose "Unpin" to bring it back.',
+    'tour.9.title':'You\'re all set!','tour.9.desc':'Go ahead and add your first widget. You can replay this tour anytime from Settings → "Replay first-run tour".',
     'confirm.reset':'All widgets and saved data will be deleted. Continue?',
     'preset.promptName':'Name this layout:',
     'preset.empty':'No saved layouts yet',
@@ -1473,13 +1567,13 @@ const I18N={
     'wi.pomo.shortBreak':'Short break','wi.pomo.longBreak':'Long break','wi.pomo.doneCount':'Done {n}',
     'wi.pomo.notifyWork':'Break\'s over! Time to focus again','wi.pomo.notifyBreak':'Nice work — take a break',
     'wi.alarm.empty':'Set a time to add an alarm','wi.alarm.notifyBody':'It\'s {time}',
-    'wi.tray.minLater':'in {n} min',
     'wi.snake.score':'Score {n}','wi.snake.best':'Best {n}','wi.snake.restart':'Restart','wi.snake.stop':'Stop',
     'wi.sports.loading':'Loading live games and the full schedule...','wi.sports.noGames':'No games to show right now.\nYou can check the full schedule on Google.',
     'wi.sports.searchGoogle':'Search schedule on Google','wi.sports.fetchFail':'Could not load game data.\nCheck your connection and try again.',
     'wi.weather.feelsLike':'feels like','wi.weather.humidity':'Humidity','wi.weather.wind':'Wind','wi.weather.today':'Today',
     'wi.weather.high':'High','wi.weather.low':'Low','wi.weather.fetchFail':'Could not load the weather','wi.weather.cityNotFound':'City not found. Try a different name',
     'ctx.lockWidget':'Lock this widget','ctx.unlockWidget':'Unlock this widget','ctx.deleteWidget':'Delete widget',
+    'ctx.pinWidget':'Always on top','ctx.unpinWidget':'Unpin',
     'ctx.lockGroup':'Lock {n} selected','ctx.unlockGroup':'Unlock {n} selected',
     'ctx.setBg':'Set background image','ctx.clearBg':'Clear background image',
     'ctx.setColor':'Set widget color','ctx.clearColor':'Reset widget color',
@@ -1631,16 +1725,22 @@ function _processMouseMove(){
   _mouseRafPending=false
   sm(!isInteractivePoint(_lastMouseX,_lastMouseY))
 }
-document.addEventListener('mousemove',e=>{
-  _lastMouseX=e.clientX;_lastMouseY=e.clientY
-  if(!_mouseRafPending){
-    _mouseRafPending=true
-    requestAnimationFrame(_processMouseMove)
-  }
-},{passive:true})
-// .topbar 자체는 pointer-events:none이라 더 이상 이 mouseenter/leave가 안 뜨니
-// 실제로 클릭 가능한 .topbar-r(버튼들)에 붙인다.
-document.querySelectorAll('.topbar-r,#modal,#ctx-menu,#cpick,#wopac,#theme-panel,#settings-panel,#tourCard').forEach(rm)
+// 핀 창은 위젯 하나만 꽉 채우는 작은 전용 창이라 "빈 배경은 클릭 통과, 위젯
+// 위만 클릭 허용" 판정 자체가 필요 없다(항상 전체가 상호작용 가능). 이 판정을
+// 그대로 두면 핀 창에서 일어나는 마우스 이동이 메인 창의 클릭 통과 상태를
+// 잘못 건드릴 위험도 있어서(같은 main.js IPC 핸들러를 공유), 아예 등록하지 않는다.
+if(!PINNED_ID){
+  document.addEventListener('mousemove',e=>{
+    _lastMouseX=e.clientX;_lastMouseY=e.clientY
+    if(!_mouseRafPending){
+      _mouseRafPending=true
+      requestAnimationFrame(_processMouseMove)
+    }
+  },{passive:true})
+  // .topbar 자체는 pointer-events:none이라 더 이상 이 mouseenter/leave가 안 뜨니
+  // 실제로 클릭 가능한 .topbar-r(버튼들)에 붙인다.
+  document.querySelectorAll('.topbar-r,#modal,#ctx-menu,#cpick,#wopac,#theme-panel,#settings-panel,#tourCard').forEach(rm)
+}
 
 // ── 커스텀 테마: hex 색상 유틸 ──
 function hexToRgb(hex){
@@ -1766,6 +1866,7 @@ let settings=JSON.parse(localStorage.getItem(SET_KEY)||'{"opacity":88,"autostart
 if(settings.dnd===undefined)settings.dnd=false
 if(!settings.dndStart)settings.dndStart='22:00'
 if(!settings.dndEnd)settings.dndEnd='07:00'
+if(settings.nudge===undefined)settings.nudge=true
 // 방해금지 시간대: 시작 시각이 끝 시각보다 늦으면(예: 22:00~07:00) 자정을 넘어가는
 // 구간으로 보고, 그렇지 않으면(예: 13:00~15:00) 같은 날 안의 구간으로 본다.
 function isDndActive(){
@@ -1900,6 +2001,19 @@ if(dndE){
   dndE.addEventListener('change',()=>{settings.dndEnd=dndE.value||'07:00';saveSettings()})
 }
 
+const nudgeT=document.getElementById('nudge-toggle')
+if(nudgeT){
+  nudgeT.classList.toggle('on',settings.nudge)
+  nudgeT.addEventListener('mouseenter',()=>sm(false))
+  nudgeT.addEventListener('mousedown',()=>sm(false))
+  nudgeT.addEventListener('click',e=>{
+    e.stopPropagation();sm(false)
+    settings.nudge=!settings.nudge
+    nudgeT.classList.toggle('on',settings.nudge)
+    saveSettings()
+  })
+}
+
 const lkT=document.getElementById('lock-toggle')
 if(lkT){
   lkT.classList.toggle('on',settings.locked)
@@ -1967,6 +2081,11 @@ function renderPresetList(){
       // 화면을 다시 덮어쓰지 못하게 막고, wcw 키에 프리셋 데이터를 넣은 뒤
       // reload하면 기존 "저장된 배치 복원" 로직이 그대로 그려준다.
       skipAutoSave=true
+      // 다른 배치로 통째로 바뀌는 거라, 지금 핀돼있는 위젯 창들은 새 배치
+      // 기준으로 맞지 않을 수 있어 창도 닫고 핀 기록도 같이 지운다(안 지우면
+      // reload 후 부팅 코드가 방금 닫은 창을 그대로 다시 열어버림).
+      try{ipcRenderer.send('close-all-pinned')}catch(e){}
+      try{localStorage.removeItem('wcw-pinned')}catch(e){}
       localStorage.setItem('wcw',JSON.stringify(presets[name]))
       location.reload()
     })
@@ -2081,6 +2200,9 @@ if(rsB){
       // localStorage에 다시 저장해버리는 걸 막는다. 이걸 안 하면 위젯 내용만
       // 비워지고 위젯 박스 자체는 재시작 후에도 그대로 남아있게 된다.
       skipAutoSave=true
+      // 핀돼서 따로 떠있는 위젯 창이 있으면 초기화와 함께 닫는다 — 안 그러면
+      // localStorage는 싹 지워졌는데 화면엔 위젯 창만 덩그러니 남게 된다.
+      try{ipcRenderer.send('close-all-pinned')}catch(e){}
       localStorage.clear()
       location.reload()
     }
@@ -2137,6 +2259,9 @@ if(backupImportBtn){
       if(!validShape||!validKeys){alert(t('restore.badFile'));return}
       if(!confirm(t('confirm.restore')))return
       skipAutoSave=true
+      // 지금 핀돼서 따로 떠있는 위젯 창이 있으면 복원과 함께 닫는다 — 백업
+      // 내용으로 위젯 배치가 통째로 바뀌는데 옛 핀 창만 화면에 남으면 안 되니까.
+      try{ipcRenderer.send('close-all-pinned')}catch(e){}
       // 기존 wcw- 데이터를 먼저 싹 지운 뒤, 백업 내용으로 채운다.
       try{
         const toRemove=[]
@@ -2201,16 +2326,6 @@ function filterWidgets(q){
   })
 }
 document.getElementById('widgetSearchIn')&&document.getElementById('widgetSearchIn').addEventListener('input',e=>filterWidgets(e.target.value))
-ipcRenderer.on('tray-action',(e,action)=>{
-  try{
-    if(action==='open-modal')openModal()
-    else if(action==='open-settings')toggleSettings()
-    else if(action==='toggle-lock'){
-      const lkT=document.getElementById('lock-toggle')
-      if(lkT)lkT.click()
-    }
-  }catch(err){console.error('[Wesk] 트레이 액션 처리 실패:',err)}
-})
 // ── 첫 실행 단계별 안내(튜토리얼) ──────────────────────────────────
 // target: 실제로 짚어서 하이라이트할 요소의 CSS 셀렉터(없으면 화면 가운데
 // 카드만 보여주는 개념 설명 단계). titleKey/descKey는 I18N 키.
@@ -2221,8 +2336,9 @@ const TOUR_STEPS=[
   {target:null,titleKey:'tour.4.title',descKey:'tour.4.desc'},
   {target:'#theme-toggle-btn',titleKey:'tour.5.title',descKey:'tour.5.desc'},
   {target:'#set-toggle-btn',titleKey:'tour.6.title',descKey:'tour.6.desc'},
+  {target:null,titleKey:'tour.8.title',descKey:'tour.8.desc'},
   {target:null,titleKey:'tour.7.title',descKey:'tour.7.desc'},
-  {target:null,titleKey:'tour.8.title',descKey:'tour.8.desc'}
+  {target:null,titleKey:'tour.9.title',descKey:'tour.9.desc'}
 ]
 let tourStep=0,tourActive=false
 function positionTourStep(){
@@ -2341,6 +2457,12 @@ function showCtx(e,w){
   }
   const delLbl=document.getElementById('ctxDeleteLabel')
   if(delLbl)delLbl.textContent=wt('ctx.deleteWidget')
+  const pinLbl=document.getElementById('ctxPinLabel')
+  const pinItem=document.getElementById('ctxPinItem')
+  if(pinLbl)pinLbl.textContent=wt('ctx.pinWidget')
+  // 여러 개 선택된 상태에서의 "그룹 핀"은 지원 범위 밖이라 그럴 땐 메뉴 항목
+  // 자체를 숨긴다 — 애매하게 하나만 핀되는 것보다, 아예 안 보이는 게 낫다.
+  if(pinItem)pinItem.style.display=(selectedWidgets.has(w.id)&&selectedWidgets.size>1)?'none':'flex'
   const bgLbl=document.getElementById('ctxBgLabel')
   if(bgLbl)bgLbl.textContent=wt('ctx.setBg')
   const bgClearItem=document.getElementById('ctxBgClearItem')
@@ -2373,6 +2495,119 @@ function toggleWidgetLock(){
   })
   save()
   document.getElementById('ctx-menu').classList.remove('show')
+}
+
+// ── 위젯 "항상 위에 표시"(핀) ──────────────────────────────────────
+// 이 앱 전체가 가상 데스크톱을 통째로 덮는 투명 창 하나뿐이라서, 그 안의 위젯
+// 하나만 다른 프로그램들보다 항상 위에 뜨게 만들 수는 없다(항상 위 고정은
+// 창 전체에만 걸 수 있는 OS 속성이라서). 그래서 "핀"하면 그 위젯을 아주 작은
+// 전용 창(이 index.html을 ?pinned=<id>로 다시 불러온 것, main.js가 만들어줌)
+// 으로 옮기고, 그 작은 창에만 항상 위 고정을 건다. 메인 창에서는 완전히
+// 제거한다 — 숨기기만 하면 타이머 달린 위젯(알람·타이머·뽀모도로 등)이 두
+// 창에서 동시에 돌면서 알림이 중복으로 울리는 등의 문제가 생기기 때문이다.
+const PIN_MARGIN=24
+function getPinnedMap(){
+  try{return JSON.parse(localStorage.getItem('wcw-pinned')||'{}')}catch(e){return {}}
+}
+function setPinnedMap(m){
+  try{localStorage.setItem('wcw-pinned',JSON.stringify(m))}catch(e){}
+}
+function pinWidgetFromCtx(){
+  if(!ctxW)return
+  pinWidget(ctxW)
+  document.getElementById('ctx-menu').classList.remove('show')
+}
+function pinWidget(w){
+  if(!w||PINNED_ID)return
+  const id=w.id
+  const width=w.offsetWidth,height=w.offsetHeight
+  // window.screenX/Y: 이 창(메인 오버레이) 좌상단의 실제 모니터 절대좌표.
+  // 위젯의 style.left/top은 이 창 기준 상대좌표라서 더해야 절대좌표가 나온다
+  // (가상 데스크톱이 왼쪽/위쪽 모니터 때문에 음수 좌표에서 시작할 수 있어서
+  // 특히 중요 — window.screenX/Y가 이미 그 음수까지 반영해서 알려준다).
+  const absX=(window.screenX||0)+(parseInt(w.style.left)||0)
+  const absY=(window.screenY||0)+(parseInt(w.style.top)||0)
+  const map=getPinnedMap()
+  map[id]={
+    type:w.dataset.type,
+    left:w.style.left,top:w.style.top,width:w.style.width,height:w.style.height,
+    z:parseInt(w.style.zIndex)||1,locked:w.dataset.locked==='1',
+    winX:absX-PIN_MARGIN,winY:absY-PIN_MARGIN,
+    winW:width+PIN_MARGIN*2,winH:height+PIN_MARGIN*2
+  }
+  setPinnedMap(map)
+  if(w._cleanup)w._cleanup()
+  clearTimers(id)
+  selectedWidgets.delete(id)
+  w.remove()
+  save()
+  try{
+    ipcRenderer.send('pin-widget',{id,x:map[id].winX,y:map[id].winY,width:map[id].winW,height:map[id].winH})
+  }catch(e){}
+}
+// 핀 창에서 "핀 해제"를 누르면 main.js가 그 창을 닫고 나서 메인 창에 이
+// 이벤트를 보내준다 — 저장해뒀던 원래 위치/크기 그대로 위젯을 다시 만든다.
+if(!PINNED_ID){
+  ipcRenderer.on('widget-unpinned',(e,id)=>{
+    const map=getPinnedMap()
+    const info=map[id]
+    if(!info)return
+    delete map[id]
+    setPinnedMap(map)
+    if(info.type&&TPL[info.type]){
+      addWidget(info.type,info.left,info.top,info.width,info.height,id,info.z,info.locked)
+    }
+  })
+}
+// 핀 창 자체(PINNED_ID가 있는 창)의 부팅 마무리 — 핀 해제 버튼을 붙이고,
+// 창 크기가 바뀔 때마다 위젯이 항상 그 크기(여백만 뺀 만큼)를 꽉 채우도록
+// 맞춰준다. 위젯 템플릿(TPL, 31종류)은 전혀 손대지 않고 완전히 밖에서
+// 덧붙이는 방식이라, 어떤 위젯 타입을 핀하든 그대로 동작한다.
+function setupPinnedWidgetWindow(w){
+  if(!w)return
+  function unpin(){
+    try{ipcRenderer.send('unpin-widget',PINNED_ID)}catch(err){}
+  }
+  // 화면 구석에 창이 붙어있으면(특히 오른쪽 위) 고정된 위치의 버튼은 다른
+  // 프로그램의 창 조작 버튼과 겹쳐서 클릭이 안 먹을 수 있다. 그래서 별도
+  // 버튼 대신, 위젯 우클릭 → 작은 메뉴에서 "고정 해제"를 고르는 방식으로 뒀다
+  // (메인 창의 .ctx/.ctx-i 스타일을 그대로 재사용해서 톤을 맞춘다).
+  const menu=document.createElement('div')
+  menu.className='ctx'
+  menu.id='pin-ctx-menu'
+  const item=document.createElement('div')
+  item.className='ctx-i'
+  item.textContent=wt('ctx.unpinWidget')
+  item.addEventListener('click',e=>{
+    e.stopPropagation()
+    menu.classList.remove('show')
+    unpin()
+  })
+  menu.appendChild(item)
+  document.body.appendChild(menu)
+  w.addEventListener('contextmenu',e=>{
+    e.preventDefault()
+    menu.style.left=Math.min(e.clientX,window.innerWidth-150)+'px'
+    menu.style.top=Math.min(e.clientY,window.innerHeight-40)+'px'
+    menu.classList.add('show')
+  })
+  document.addEventListener('mousedown',e=>{
+    if(!menu.contains(e.target))menu.classList.remove('show')
+  })
+  function fit(){
+    const tw=Math.max(160,window.innerWidth-PIN_MARGIN*2)
+    const th=Math.max(80,window.innerHeight-PIN_MARGIN*2)
+    w.style.width=tw+'px'
+    w.style.height=th+'px'
+    try{updScale(w)}catch(e){}
+    if(w._redraw)try{w._redraw()}catch(e){}
+  }
+  window.addEventListener('resize',()=>{
+    if(_pinFitRaf)return
+    _pinFitRaf=true
+    requestAnimationFrame(()=>{_pinFitRaf=false;fit()})
+  })
+  fit()
 }
 
 // ── 위젯 배경 이미지 ──────────────────────────────────────────────
@@ -2864,6 +3099,10 @@ function widgetSnapshot(){
 }
 function save(){
   if(skipAutoSave)return
+  // 핀 창은 위젯을 딱 하나만 들고 있어서, 여기서 그대로 저장해버리면 메인 창의
+  // 전체 위젯 배치(wcw)가 이 위젯 하나짜리 배열로 통째로 덮어써진다 — 핀 창은
+  // 절대 이 전역 배치 데이터를 건드리면 안 된다(위치는 wcw-pinned가 따로 관리).
+  if(PINNED_ID)return
   localStorage.setItem('wcw',JSON.stringify(widgetSnapshot()))
 }
 window.addEventListener('beforeunload',()=>{save();saveSettings()})
@@ -2991,9 +3230,14 @@ function addWidgetInner(type,left,top,width,height,fixedId,fixedZ,fixedLocked){
   }else{
     bringToFront(d)
   }
-  makeDrag(d);makeResize(d)
-  d.addEventListener('mouseenter',()=>sm(false))
-  d.addEventListener('mouseleave',()=>sm(true))
+  // 핀 창에서는 위젯을 화면 안에서 드래그/리사이즈하는 게 아니라 창 자체를
+  // 옮기고 크기를 바꾸는 방식(setupPinnedWidget에서 처리)이라, 평소의 드래그/
+  // 리사이즈/클릭통과 판정용 리스너들은 필요 없고 오히려 서로 부딪힐 수 있다.
+  if(!PINNED_ID){
+    makeDrag(d);makeResize(d)
+    d.addEventListener('mouseenter',()=>sm(false))
+    d.addEventListener('mouseleave',()=>sm(true))
+  }
   if((settings&&settings.locked)||fixedLocked){const h=d.querySelector('.rh');if(h)h.style.display='none'}
   const F={clock:initClock,calendar:initCalendar,
     todo:initTodo,memo:initMemo,habit:initHabit,counter:initCounter,
@@ -5769,48 +6013,78 @@ function initWeather(w){
 
 
 
-// sessionStorage는 앱을 진짜로 재시작해야(새 프로세스로 새 창이 뜰 때) 초기화되고,
-// 프리셋 전환이나 초기화처럼 코드에서 일부러 location.reload()만 하는 경우엔
-// 그대로 남아있다. 이 차이를 이용해서 "진짜 첫 시작"일 때만 자동 불러오기
-// 프리셋을 적용하고, 프리셋 전환/초기화 직후의 reload에서는 그게 또
-// 자동 불러오기로 덮어써지는 일이 없게 한다.
-try{
-  if(!sessionStorage.getItem('wcw-launched')){
-    sessionStorage.setItem('wcw-launched','1')
-    if(settings.autoLoadPreset){
-      const _presets=loadPresets()
-      const _preset=_presets[settings.autoLoadPreset]
-      if(Array.isArray(_preset))localStorage.setItem('wcw',JSON.stringify(_preset))
-    }
+if(PINNED_ID){
+  // ── 핀 창 부팅 ──
+  // 메인 창의 위젯 배치(wcw)는 절대 건드리지 않고, wcw-pinned에 저장해둔 이
+  // 위젯 하나의 정보만 읽어서 그것만 만든다. 못 찾으면(메인 창에서 먼저
+  // 핀 해제/삭제됐는데 이 창이 뒤늦게 뜬 것 같은 드문 경우) 빈 채로 두고,
+  // 핀 해제 버튼만이라도 눌러서 닫을 수 있게 해둔다.
+  document.body.classList.add('pinned-mode')
+  let pinInfo=null
+  try{pinInfo=getPinnedMap()[PINNED_ID]}catch(e){pinInfo=null}
+  if(pinInfo&&pinInfo.type&&TPL[pinInfo.type]){
+    addWidget(pinInfo.type,PIN_MARGIN+'px',PIN_MARGIN+'px',pinInfo.width,pinInfo.height,PINNED_ID,pinInfo.z,pinInfo.locked)
   }
-}catch(e){}
-
-let saved=null
-try{saved=localStorage.getItem('wcw')}catch(e){}
-let restored=false
-if(saved){
+  setTimeout(()=>{
+    applyOpacity(settings.opacity)
+    const w=document.getElementById(PINNED_ID)
+    if(w)setupPinnedWidgetWindow(w)
+  },100)
+}else{
+  // sessionStorage는 앱을 진짜로 재시작해야(새 프로세스로 새 창이 뜰 때) 초기화되고,
+  // 프리셋 전환이나 초기화처럼 코드에서 일부러 location.reload()만 하는 경우엔
+  // 그대로 남아있다. 이 차이를 이용해서 "진짜 첫 시작"일 때만 자동 불러오기
+  // 프리셋을 적용하고, 프리셋 전환/초기화 직후의 reload에서는 그게 또
+  // 자동 불러오기로 덮어써지는 일이 없게 한다.
   try{
-    const arr=JSON.parse(saved)
-    if(Array.isArray(arr)){
-      // 배열이 비어있어도(예: 방금 초기화 버튼을 눌러서 위젯을 다 지운 경우) 이건
-      // "저장된 상태가 빈 상태"인 거지 "저장된 적이 없는 첫 실행"이 아니다.
-      // 그래서 length 조건 없이 배열이기만 하면 복원된 것으로 보고, 기본 위젯을
-      // 다시 깔지 않는다.
-      arr.forEach(x=>{if(x&&x.type&&TPL[x.type])addWidget(x.type,x.left,x.top,x.width,x.height,x.id,x.z,x.locked)})
-      restored=true
+    if(!sessionStorage.getItem('wcw-launched')){
+      sessionStorage.setItem('wcw-launched','1')
+      if(settings.autoLoadPreset){
+        const _presets=loadPresets()
+        const _preset=_presets[settings.autoLoadPreset]
+        if(Array.isArray(_preset))localStorage.setItem('wcw',JSON.stringify(_preset))
+      }
     }
-  }catch(e){localStorage.removeItem('wcw')}
-}
-// 첫 실행이든 초기화 버튼을 누른 뒤든, 항상 완전히 빈 바탕화면으로 시작한다.
-// (예전엔 저장된 위젯이 없으면 시계/할일/뉴스/메모 4개를 자동으로 깔아줬는데,
-// 그러면 초기화를 눌러도 위젯이 진짜로 다 사라지지 않는 것처럼 보여서 없앴다.)
-setTimeout(()=>{
-  applyOpacity(settings.opacity)
-  if(settings.locked)document.querySelectorAll('.rh').forEach(h=>h.style.display='none')
-  if(!restored){
-    startTour()
+  }catch(e){}
+
+  let saved=null
+  try{saved=localStorage.getItem('wcw')}catch(e){}
+  let restored=false
+  if(saved){
+    try{
+      const arr=JSON.parse(saved)
+      if(Array.isArray(arr)){
+        // 배열이 비어있어도(예: 방금 초기화 버튼을 눌러서 위젯을 다 지운 경우) 이건
+        // "저장된 상태가 빈 상태"인 거지 "저장된 적이 없는 첫 실행"이 아니다.
+        // 그래서 length 조건 없이 배열이기만 하면 복원된 것으로 보고, 기본 위젯을
+        // 다시 깔지 않는다.
+        arr.forEach(x=>{if(x&&x.type&&TPL[x.type])addWidget(x.type,x.left,x.top,x.width,x.height,x.id,x.z,x.locked)})
+        restored=true
+      }
+    }catch(e){localStorage.removeItem('wcw')}
   }
-},100)
+  // 지금 핀돼있는 위젯들(전 실행에서 "항상 위에 표시"로 남겨둔 것들)은 메인
+  // 창에는 절대 만들지 않고, 저장해둔 위치/크기 그대로 각자의 작은 전용
+  // 창으로 다시 띄워달라고 메인 프로세스에 요청한다.
+  try{
+    const pinnedMap=getPinnedMap()
+    Object.keys(pinnedMap).forEach(id=>{
+      const info=pinnedMap[id]
+      if(!info||!info.type||!TPL[info.type])return
+      ipcRenderer.send('pin-widget',{id,x:info.winX,y:info.winY,width:info.winW,height:info.winH})
+    })
+  }catch(e){}
+  // 첫 실행이든 초기화 버튼을 누른 뒤든, 항상 완전히 빈 바탕화면으로 시작한다.
+  // (예전엔 저장된 위젯이 없으면 시계/할일/뉴스/메모 4개를 자동으로 깔아줬는데,
+  // 그러면 초기화를 눌러도 위젯이 진짜로 다 사라지지 않는 것처럼 보여서 없앴다.)
+  setTimeout(()=>{
+    applyOpacity(settings.opacity)
+    if(settings.locked)document.querySelectorAll('.rh').forEach(h=>h.style.display='none')
+    if(!restored){
+      startTour()
+    }
+  },100)
+}
 
 
 </script>
