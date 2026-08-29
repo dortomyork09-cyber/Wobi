@@ -24,7 +24,10 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "displayLanguageSelector": true,
+      "installerLanguages": ["en_US", "ko_KR"],
+      "language": "1042"
     },
     "publish": {
       "provider": "github",
