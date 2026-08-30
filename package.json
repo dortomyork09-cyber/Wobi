@@ -27,7 +27,8 @@
       "createStartMenuShortcut": true,
       "displayLanguageSelector": true,
       "installerLanguages": ["en_US", "ko_KR"],
-      "language": "1042"
+      "language": "1042",
+      "artifactName": "Wesk-Setup.${ext}"
     },
     "publish": {
       "provider": "github",

@@ -815,22 +815,22 @@ body.lang-en .kr-only{display:none}
 .tour-spot.center{border-color:transparent;box-shadow:0 0 0 4000px #020610b3}
 .tour-card{
   position:fixed;z-index:100001;background:var(--wb);border:1px solid var(--wbr);
-  border-radius:14px;padding:18px;width:280px;color:var(--wc);font-family:var(--wf);
+  border-radius:16px;padding:24px;width:340px;color:var(--wc);font-family:var(--wf);
   box-shadow:0 20px 60px #000000a0;backdrop-filter:blur(24px);
   opacity:0;transform:translateY(8px);pointer-events:none;
   transition:opacity .25s ease,transform .25s ease,top .3s ease,left .3s ease;
   display:none;
 }
 .tour-card.show{display:block;opacity:1;transform:translateY(0);pointer-events:auto}
-.tour-step-label{font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--lc);margin-bottom:8px}
-.tour-title{font-size:14.5px;font-weight:700;margin-bottom:6px}
-.tour-desc{font-size:12px;line-height:1.6;color:var(--sc);margin-bottom:14px}
+.tour-step-label{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--lc);margin-bottom:10px}
+.tour-title{font-size:17px;font-weight:700;margin-bottom:8px}
+.tour-desc{font-size:14px;line-height:1.65;color:var(--sc);margin-bottom:16px}
 .tour-desc b{color:var(--wc);font-weight:700}
-.tour-dots{display:flex;gap:5px;margin-bottom:14px}
-.tour-dot{width:6px;height:6px;border-radius:50%;background:var(--ibr);transition:all .2s}
-.tour-dot.active{background:var(--c4);width:16px;border-radius:4px}
+.tour-dots{display:flex;gap:6px;margin-bottom:16px}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--ibr);transition:all .2s}
+.tour-dot.active{background:var(--c4);width:18px;border-radius:4px}
 .tour-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tour-skip{background:none;border:none;color:var(--sc);font-size:11px;cursor:pointer;padding:4px 2px;font-family:var(--wf)}
+.tour-skip{background:none;border:none;color:var(--sc);font-size:12.5px;cursor:pointer;padding:4px 2px;font-family:var(--wf)}
 .tour-skip:hover{color:var(--wc)}
 .tour-actions-r{display:flex;gap:6px}
 
@@ -1069,6 +1069,25 @@ body.lang-en .kr-only{display:none}
       <div class="wopt" onclick="addWidget('g2048')"><svg class="ic"><use href="#i-2048"/></svg><div class="nm" data-i18n="w.g2048">2048</div></div>
       <div class="wopt" onclick="addWidget('minesweeper')"><svg class="ic"><use href="#i-mine"/></svg><div class="nm" data-i18n="w.minesweeper">지뢰찾기</div></div>
       <div class="wopt" onclick="addWidget('tictactoe')"><svg class="ic"><use href="#i-ttt"/></svg><div class="nm" data-i18n="w.tictactoe">틱택토</div></div>
+    </div>
+  </div>
+</div>
+
+<!--
+  Electron 렌더러는 window.prompt()를 지원하지 않는다(호출하면 그냥
+  "prompt() is not supported" 예외를 던짐 — alert/confirm은 되는데 prompt만
+  안 됨). 예전엔 이걸 모르고 prompt()를 그대로 썼는데, try/catch가 예외를
+  조용히 삼켜버려서 "레이아웃 저장 버튼 눌러도 무반응"처럼 보이는 버그가
+  있었다. 그래서 이름 입력이 필요한 곳(레이아웃 저장, 커스텀 테마 저장)은
+  전부 이 커스텀 모달(textPromptModal) + textPrompt() 함수로 대체한다.
+-->
+<div class="mov" id="textPromptModal" onclick="if(event.target===this)_textPromptResolve(null)">
+  <div class="mdl" style="min-width:300px;max-width:340px">
+    <div class="mdl-h" id="textPromptTitle">이름 입력</div>
+    <input type="text" class="lk-field" id="textPromptInput" style="margin:14px 0" data-i18n-placeholder="common.namePh" placeholder="이름">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="textPromptCancelBtn" onclick="_textPromptResolve(null)" data-i18n="common.cancel">취소</button>
+      <button class="btn pri" id="textPromptOkBtn" onclick="_textPromptResolve(document.getElementById('textPromptInput').value)" data-i18n="common.save">저장</button>
     </div>
   </div>
 </div>
@@ -1405,7 +1424,6 @@ const I18N={
     'tour.4.title':'우클릭으로 꾸미기','tour.4.desc':'위젯을 <b>우클릭</b>하면 색상·투명도·배경 이미지·잠금·삭제 메뉴가 떠요. 위젯마다 따로 꾸며보세요.',
     'tour.5.title':'테마','tour.5.desc':'여기서 전체 테마(색상)를 바꾸거나, 직접 색을 골라 나만의 테마를 만들 수 있어요.',
     'tour.6.title':'설정','tour.6.desc':'투명도·배치 잠금·방해금지 시간대·백업/복원 같은 옵션은 전부 여기 있어요. 이 안내도 <b>설정</b>에서 언제든 다시 볼 수 있어요.',
-    'tour.8.title':'단축키로 빠르게 소환','tour.8.desc':'다른 창으로 화면이 꽉 차 있어도 <b>Alt+W</b>를 누르면 위젯들이 잠깐 맨 앞으로 떠올라요. 바탕화면까지 갈 필요 없이 바로 확인하고, 다른 곳을 클릭하면 자동으로 다시 내려가요.',
     'tour.7.title':'위젯 고정하기','tour.7.desc':'위젯을 <b>우클릭</b>한 뒤 "항상 위에 표시"를 누르면, 그 위젯만 작은 창으로 떨어져 나와서 다른 프로그램(브라우저, 게임 등) 위에도 항상 떠있게 고정할 수 있어요. 다시 우클릭하면 "고정 해제"로 원래 자리로 돌아와요.',
     'tour.9.title':'준비 완료!','tour.9.desc':'이제 자유롭게 위젯을 추가해보세요. 이 안내는 설정 → "첫 실행 안내 다시보기"에서 언제든 다시 볼 수 있어요.',
     'confirm.reset':'모든 위젯과 저장된 데이터가 삭제됩니다. 계속할까요?',
@@ -1425,7 +1443,7 @@ const I18N={
     'wi.habit.ph':'습관 입력 후 Enter',
     'wi.counter.rename':'이름 변경','wi.counter.reset':'리셋',
     'wi.news.srcTitle':'RSS 소스 설정','wi.news.srcPh':'RSS 주소, 콤마로 여러 개(https://...) — 비우면 기본 뉴스',
-    'common.save':'저장','common.loading':'불러오는 중','common.refresh':'새로고침',
+    'common.save':'저장','common.loading':'불러오는 중','common.refresh':'새로고침','common.cancel':'취소',
     'common.namePh':'이름','common.nameOptionalPh':'이름(선택)','common.add':'추가',
     'common.start':'시작','common.reset':'초기화','common.search':'검색','common.folder':'폴더','common.clear':'지우기','common.restart':'다시 시작',
     'wi.links.urlPh':'주소',
@@ -1528,7 +1546,6 @@ const I18N={
     'tour.4.title':'Right-click to customize','tour.4.desc':'Right-click a widget for color, opacity, background image, lock, and delete options — customize each one separately.',
     'tour.5.title':'Themes','tour.5.desc':'Switch the whole app\'s color theme here, or pick your own colors to make a custom one.',
     'tour.6.title':'Settings','tour.6.desc':'Opacity, layout lock, do-not-disturb hours, backup/restore — all the options live here. You can replay this tour anytime from <b>Settings</b>.',
-    'tour.8.title':'Summon with a hotkey','tour.8.desc':'Even with other windows filling the screen, press <b>Alt+W</b> and your widgets pop to the front for a moment. No need to go to the desktop — click elsewhere and they drop back down automatically.',
     'tour.7.title':'Pin a widget','tour.7.desc':'Right-click any widget and choose "Always on top" to pop it into its own small window that stays above everything else — even other apps. Right-click it again and choose "Unpin" to bring it back.',
     'tour.9.title':'You\'re all set!','tour.9.desc':'Go ahead and add your first widget. You can replay this tour anytime from Settings → "Replay first-run tour".',
     'confirm.reset':'All widgets and saved data will be deleted. Continue?',
@@ -1548,7 +1565,7 @@ const I18N={
     'wi.habit.ph':'Type a habit and press Enter',
     'wi.counter.rename':'Rename','wi.counter.reset':'Reset',
     'wi.news.srcTitle':'RSS source settings','wi.news.srcPh':'RSS URL(s), comma-separated (https://...) — leave empty for the default',
-    'common.save':'Save','common.loading':'Loading...','common.refresh':'Refresh',
+    'common.save':'Save','common.loading':'Loading...','common.refresh':'Refresh','common.cancel':'Cancel',
     'common.namePh':'Name','common.nameOptionalPh':'Name (optional)','common.add':'Add',
     'common.start':'Start','common.reset':'Reset','common.search':'Search','common.folder':'Folder','common.clear':'Clear','common.restart':'Restart',
     'wi.links.urlPh':'URL',
@@ -1681,6 +1698,10 @@ function setLang(lang){
   // 채워넣은 텍스트는 applyI18n()이 못 건드리니 따로 다시 그려준다.
   try{renderAutoPresetSelect(Object.keys(loadPresets()))}catch(e){}
   try{renderThemeGrid()}catch(e){}
+  // "저장된 레이아웃이 없어요" 같은 빈 상태 문구나 저장된 레이아웃 이름 목록도
+  // data-i18n이 아니라 JS로 그려지는 부분이라, 언어를 바꾼 뒤에도 최초 로딩
+  // 시점의 언어로 계속 남아있던 버그가 있었다 — 여기서 같이 다시 그려준다.
+  try{renderPresetList()}catch(e){}
   // 뉴스 위젯처럼 언어에 따라 기본 소스가 바뀌는 위젯들에게 알려서 즉시 새로고침하게 한다.
   window.dispatchEvent(new CustomEvent('wcw-lang-changed',{detail:{lang}}))
 }
@@ -1726,7 +1747,7 @@ function sm(v){
   }
 }
 function rm(el){if(!el)return;el.addEventListener('mouseenter',()=>sm(false));el.addEventListener('mouseleave',()=>sm(true))}
-const INTERACTIVE_SEL='.topbar,#modal.show,#ctx-menu.show,#cpick.show,#wopac.show,#theme-panel.show,#settings-panel.show,.widget,#tourCard.show'
+const INTERACTIVE_SEL='.topbar,#modal.show,#ctx-menu.show,#cpick.show,#wopac.show,#theme-panel.show,#settings-panel.show,.widget,#tourCard.show,#textPromptModal.show'
 function isInteractivePoint(x,y){
   try{
     const el=document.elementFromPoint(x,y)
@@ -2133,10 +2154,9 @@ function renderPresetList(){
 const presetSaveBtn=document.getElementById('preset-save-btn')
 if(presetSaveBtn){
   presetSaveBtn.addEventListener('mousedown',e=>e.stopPropagation())
-  presetSaveBtn.addEventListener('click',e=>{
+  presetSaveBtn.addEventListener('click',async e=>{
     e.stopPropagation()
-    let name=''
-    try{name=(prompt(t('preset.promptName'))||'').trim()}catch(err){name=''}
+    const name=await textPrompt(t('preset.promptName'))
     if(!name)return
     const presets=loadPresets()
     presets[name]=widgetSnapshot()
@@ -2209,10 +2229,9 @@ CT_IDS.forEach(id=>{
 const ctSaveBtn=document.getElementById('ctSaveBtn')
 if(ctSaveBtn){
   ctSaveBtn.addEventListener('mousedown',e=>e.stopPropagation())
-  ctSaveBtn.addEventListener('click',e=>{
+  ctSaveBtn.addEventListener('click',async e=>{
     e.stopPropagation()
-    let name=''
-    try{name=(prompt(t('preset.promptName'))||'').trim()}catch(err){name=''}
+    const name=await textPrompt(t('preset.promptName'))
     if(!name)return
     const v=readCustomPickers()
     const themes=loadCustomThemes()
@@ -2368,7 +2387,6 @@ const TOUR_STEPS=[
   {target:null,titleKey:'tour.4.title',descKey:'tour.4.desc'},
   {target:'#theme-toggle-btn',titleKey:'tour.5.title',descKey:'tour.5.desc'},
   {target:'#set-toggle-btn',titleKey:'tour.6.title',descKey:'tour.6.desc'},
-  {target:null,titleKey:'tour.8.title',descKey:'tour.8.desc'},
   {target:null,titleKey:'tour.7.title',descKey:'tour.7.desc'},
   {target:null,titleKey:'tour.9.title',descKey:'tour.9.desc'}
 ]
@@ -2385,18 +2403,20 @@ function positionTourStep(){
     spot.style.width=(r.width+pad*2)+'px';spot.style.height=(r.height+pad*2)+'px'
     spot.classList.remove('center')
     // 카드는 짚은 요소 아래쪽에, 화면 밖으로 안 나가게 살짝 보정해서 띄운다.
-    const cardW=280
+    // (카드 크기를 키우면서 여기 예상 너비/높이도 CSS의 실제 크기에 맞춰 같이 늘림 —
+    // 안 그러면 카드가 화면 밖으로 잘리거나 짚은 요소랑 겹치는 위치 계산 버그가 생김)
+    const cardW=340
     let cardTop=r.bottom+14
     let cardLeft=Math.min(Math.max(r.left+r.width/2-cardW/2,12),window.innerWidth-cardW-12)
-    if(cardTop+220>window.innerHeight)cardTop=Math.max(12,r.top-14-220)
+    if(cardTop+260>window.innerHeight)cardTop=Math.max(12,r.top-14-260)
     card.style.top=cardTop+'px';card.style.left=cardLeft+'px'
   }else{
     // 짚을 대상이 없는 단계는 화면 정중앙에 카드만 띄운다.
     spot.style.top='0';spot.style.left='0';spot.style.width='100%';spot.style.height='100%'
     spot.classList.add('center')
-    const cardW=280
+    const cardW=340
     card.style.left=((window.innerWidth-cardW)/2)+'px'
-    card.style.top=((window.innerHeight-220)/2)+'px'
+    card.style.top=((window.innerHeight-260)/2)+'px'
   }
 }
 function renderTourStep(){
@@ -2452,6 +2472,47 @@ if(onboardPreviewBtn){
   })
 }
 function closeModal(){document.getElementById('modal').classList.remove('show')}
+
+// ── window.prompt() 대체 커스텀 모달 ──
+// Electron 렌더러는 window.prompt()를 지원하지 않아서(예외를 던짐) 이름을
+// 입력받아야 하는 곳(레이아웃 저장, 커스텀 테마 저장)에서 조용히 아무 일도
+// 안 일어나는 것처럼 보이는 버그가 있었다. textPrompt(title)을 await하면
+// 사용자가 입력한 문자열(취소하면 null)을 돌려준다.
+let _textPromptResolver=null
+function _textPromptResolve(value){
+  const modal=document.getElementById('textPromptModal')
+  if(modal)modal.classList.remove('show')
+  if(_textPromptResolver){
+    const resolve=_textPromptResolver
+    _textPromptResolver=null
+    const v=(typeof value==='string')?value.trim():null
+    resolve(v?v:null)
+  }
+}
+function textPrompt(title){
+  return new Promise(resolve=>{
+    try{
+      const modal=document.getElementById('textPromptModal')
+      const titleEl=document.getElementById('textPromptTitle')
+      const input=document.getElementById('textPromptInput')
+      if(!modal||!input){resolve(null);return}
+      if(titleEl)titleEl.textContent=title||''
+      input.value=''
+      _textPromptResolver=resolve
+      modal.classList.add('show')
+      sm(false)
+      setTimeout(()=>input.focus(),50)
+      // Enter로 확인, Esc로 취소 — 한 번 쓰고 버리는 리스너라 {once:true}로
+      // 등록해서 중복 등록이 쌓이지 않게 한다.
+      input.addEventListener('keydown',e=>{
+        if(e.key==='Enter'){e.preventDefault();_textPromptResolve(input.value)}
+        else if(e.key==='Escape'){e.preventDefault();_textPromptResolve(null)}
+      },{once:true})
+    }catch(e){
+      resolve(null)
+    }
+  })
+}
 
 document.addEventListener('click',e=>{
   // 버튼 안의 아이콘(svg)이나 텍스트(span)를 클릭하면 e.target이 버튼 자체가 아니라
@@ -5859,7 +5920,6 @@ function initSports(w){
       const conf=SPORTS_LIST.find(x=>x.id===cur)
       let games=await fetchESPNRange(conf)
 
-      const now=Date.now()
       games=games.filter(g=>g && g.date)
 
       // 중복 제거
@@ -5871,6 +5931,24 @@ function initSports(w){
         return true
       })
 
+      // 끝난 경기 결과는 "지금 시각 기준 지난 24시간 이내"에 열린 것만 —
+      // 달력상의 오늘(자정 기준)로 자르면 밤 12시가 막 지났을 때 방금 끝난
+      // 경기가 갑자기 사라지는 등 어색한 경계가 생겨서, 고정된 하루 범위 대신
+      // 지금으로부터 24시간을 굴러가는 창으로 계산한다. 반면 예정 경기는
+      // 같은 방식으로 제한하면 밤늦게는 위젯이 거의 텅 비어버리니, 날짜 제한
+      // 없이 가까운 순서로 10경기까지 넉넉하게 보여준다.
+      const now=Date.now()
+      const last24h=now-24*60*60*1000
+      const upcomingLimit=10
+
+      const finishedToday=games
+        .filter(g=>g.done && !g.live)
+        .filter(g=>{
+          const t=new Date(g.date).getTime()
+          return !isNaN(t)&&t>=last24h&&t<=now
+        })
+        .sort((a,b)=>new Date(a.date)-new Date(b.date))
+
       const live=games
         .filter(g=>g.live)
         .sort((a,b)=>new Date(a.date)-new Date(b.date))
@@ -5878,27 +5956,10 @@ function initSports(w){
       const upcoming=games
         .filter(g=>!g.live && !g.done && new Date(g.date).getTime()>=now)
         .sort((a,b)=>new Date(a.date)-new Date(b.date))
+        .slice(0,upcomingLimit)
 
-      // 종료 경기는 최근 2개만, 예정 경기는 넉넉하게 보여준다.
-      const doneLimit=2
-      const futureLimit=20
-
-      const recent=games
-        .filter(g=>g.done && new Date(g.date).getTime()<=now)
-        .sort((a,b)=>new Date(b.date)-new Date(a.date))
-        .slice(0,doneLimit)
-
-      // 표시 순서: 종료된 경기 → 진행중인 경기 → 예정 경기
-      const final=[...recent,...live,...upcoming.slice(0,futureLimit)]
-
-      // 같은 경기가 섞이는 경우 최종 중복 제거
-      const finalSeen=new Set()
-      const uniqueFinal=final.filter(g=>{
-        const key=(g.home||'')+'|'+(g.away||'')+'|'+g.date
-        if(finalSeen.has(key))return false
-        finalSeen.add(key)
-        return true
-      })
+      // 표시 순서: 오늘 끝난 경기 → 진행중인 경기 → 다가오는 경기(최대 10개)
+      const uniqueFinal=[...finishedToday,...live,...upcoming]
 
       list.innerHTML=''
 

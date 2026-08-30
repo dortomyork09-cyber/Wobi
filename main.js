@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, dialog, shell, desktopCapturer, clipboard, Notification, globalShortcut } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, dialog, shell, desktopCapturer, clipboard, Notification } = require('electron')
 const path = require('path')
 const https = require('https')
 const fs = require('fs')
@@ -31,7 +31,6 @@ const isPortableBuild = !!process.env.PORTABLE_EXECUTABLE_DIR
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache')
 
 let win = null
-let peeking = false
 // "항상 위에 표시"로 핀한 위젯마다 따로 뜨는 아주 작은 전용 창들.
 // 위젯 id → 그 위젯만 담은 BrowserWindow.
 const pinnedWindows = {}
@@ -39,25 +38,6 @@ const pinnedWindows = {}
 // 유지해야 한다 — 창 크기와 위젯이 꽉 채우는 크기가 서로 어긋나면 위젯 주변에
 // 빈 여백이 남거나 잘리는 것처럼 보인다.
 const PIN_MARGIN = 24
-
-// 전역 단축키(기본 Alt+W)로 위젯 화면을 다른 창들보다 앞으로 잠깐
-// 띄우는 "소환" 기능. win이 아직 없거나 이미 파괴된 상태면 조용히 무시한다
-// (앱 종료 직전에 단축키가 눌리는 등의 드문 경우를 방어).
-function togglePeek() {
-  try {
-    if (!win || win.isDestroyed()) return
-    if (peeking) {
-      win.setAlwaysOnTop(false)
-      peeking = false
-    } else {
-      win.setAlwaysOnTop(true, 'screen-saver')
-      win.focus()
-      peeking = true
-    }
-  } catch (e) {
-    logError('toggle-peek', e)
-  }
-}
 
 // ==========================================
 // 에러 로그
@@ -109,6 +89,30 @@ function logError(context, err) {
   } catch (e) {
     // 로그 자체가 실패해도 무시 — 앱 동작에 영향 주면 안 됨
   }
+
+  // ── 임시 디버그용 미러 로그 ──
+  // 정식 로그는 app.getPath('userData')(AppData\Roaming\...) 밑이라 원격으로
+  // 못 읽는 상황이라, npm start(패키징 안 된 상태)로 돌릴 때는 __dirname이
+  // 곧 프로젝트 폴더(C:\WCW)라서 거기에도 같은 줄을 하나 더 남긴다.
+  // 패키징된(설치된) 앱에서는 __dirname이 asar 내부라 쓰기가 실패하는데,
+  // 그래도 try/catch로 감쌌으니 조용히 무시되고 앱 동작엔 영향 없다.
+  try {
+    const debugPath = path.join(__dirname, 'wesk-debug.log')
+    const time2 = localTimeString()
+    const message2 = err && err.stack ? err.stack : String(err)
+    fs.appendFileSync(debugPath, `[${time2}] [${context}] ${message2}\n`)
+  } catch (e) {}
+}
+
+// logError는 "에러"만 남기는데, 지금은 에러가 아니라 정상 진행 상황도 같이
+// 봐야 확인이 되는 상황(단축키가 등록은 됐는지, 눌렸을 때 핸들러까지
+// 들어오긴 하는지)이라 별도로 가벼운 디버그 로그도 하나 만든다. main.js
+// 안에서만 쓰고, 위 logError와 마찬가지로 __dirname(C:\WCW) 밑에 남긴다.
+function debugLog(msg) {
+  try {
+    const debugPath = path.join(__dirname, 'wesk-debug.log')
+    fs.appendFileSync(debugPath, `[${localTimeString()}] [debug] ${msg}\n`)
+  } catch (e) {}
 }
 
 process.on('uncaughtException', (err) => {
@@ -406,21 +410,6 @@ function createWindow() {
   // 위젯/패널 위에 있을 때만 렌더러가 false로 잠깐 풀어주는 구조를 유지한다.
   win.setIgnoreMouseEvents(true, {
     forward: true
-  })
-
-  // ── 단축키 소환(peek) 모드 ──
-  // 평소엔 alwaysOnTop:false라서 다른 창에 가려져 있다가, 전역 단축키를
-  // 누르면 잠깐 맨 앞으로 띄워서(alwaysOnTop:true) 바탕화면까지 안 가고도
-  // 위젯을 바로 확인할 수 있게 한다. 사용자가 다른 창을 클릭해서 포커스가
-  // 빠져나가면(blur) 자동으로 다시 원래 상태(맨 앞 고정 해제)로 내려간다 —
-  // 그래야 "다시 안 눌러도 알아서 원래대로 돌아온다"는 느낌을 준다.
-  win.on('blur', () => {
-    if (peeking) {
-      try {
-        win.setAlwaysOnTop(false)
-      } catch (e) {}
-      peeking = false
-    }
   })
 
   // 메인 창이 닫히면(예: 상단 바의 종료 버튼) 핀돼서 따로 떠있던 위젯 창들도
@@ -1418,21 +1407,9 @@ function createWindow() {
 // ==========================================
 
 app.whenReady().then(() => {
+  debugLog(`앱 시작 — 버전 ${app.getVersion()}, __dirname=${__dirname}, PID=${process.pid}`)
 
   createWindow()
-
-  // 전역 단축키로 위젯 소환하기. 다른 앱이 이미 같은 조합을 선점하고 있으면
-  // register()가 false를 반환하는데, 그래도 앱 자체가 죽으면 안 되니 로그만
-  // 남기고 넘어간다(사용자에게 별도 안내는 추후 설정 화면에서 재등록 가능하게
-  // 확장할 수 있음).
-  try {
-    const peekRegistered = globalShortcut.register('Alt+W', togglePeek)
-    if (!peekRegistered) {
-      logError('global-shortcut-register', new Error('Alt+W 등록 실패 (다른 프로그램이 이미 사용 중일 수 있음)'))
-    }
-  } catch (e) {
-    logError('global-shortcut-register', e)
-  }
 
   // 모니터를 연결/해제하거나 배치·해상도를 바꾸면 위젯을 놓을 수 있는 전체
   // 영역도 바뀌므로, 창 크기를 다시 계산해서 맞춰준다.
@@ -1494,15 +1471,6 @@ app.on(
     }
   }
 )
-
-// 앱이 완전히 종료되기 직전에 등록해둔 전역 단축키를 반드시 해제한다.
-// 안 그러면 앱은 꺼졌는데 단축키(Alt+W)는 시스템에 계속 붙잡혀 있어서
-// 다른 프로그램이 같은 조합을 못 쓰게 되는 일이 생길 수 있다.
-app.on('will-quit', () => {
-  try {
-    globalShortcut.unregisterAll()
-  } catch (e) {}
-})
 
 app.on(
   'activate',
