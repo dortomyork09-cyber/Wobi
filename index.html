@@ -83,9 +83,12 @@ body::before{display:none !important;content:none !important;}
 /* ══ 위젯 "항상 위에 표시"(핀) 전용 창 ══
    메인 오버레이 창이 아니라, 위젯 하나만 담아 다른 프로그램들 위에 항상 떠있는
    아주 작은 별도 창에서만 붙는 body.pinned-mode 스타일. 탑바·모달·패널·튜토리얼·
-   마스코트처럼 메인 창에만 필요한 UI는 다 숨기고, 위젯 헤더(.wl)를 OS 창을
-   드래그하는 손잡이로 쓴다(-webkit-app-region). 리사이즈는 창 가장자리를 직접
-   끄는 걸로 대신하므로 기존 리사이즈 손잡이(.rh)는 숨긴다. */
+   마스코트처럼 메인 창에만 필요한 UI는 다 숨기고, 위젯 전체를 드래그 가능한
+   영역으로 쓴다(실제 드래그 처리는 JS의 setupPinnedWidgetWindow에서 한다 —
+   버튼·입력창처럼 클릭이 필요한 요소는 거기서 걸러진다). 예전엔 헤더(.wl)만
+   드래그가 돼서 그 좁은 줄만 정확히 잡아야 했는데, 이제 위젯 어디를 잡아도
+   창이 따라 움직인다. 리사이즈는 창 가장자리를 직접 끄는 걸로 대신하므로
+   기존 리사이즈 손잡이(.rh)는 숨긴다. */
 body.pinned-mode .topbar,
 body.pinned-mode #modal,
 body.pinned-mode #ctx-menu,
@@ -97,12 +100,8 @@ body.pinned-mode #tourSpot,
 body.pinned-mode #tourCard,
 body.pinned-mode .mascot{display:none !important}
 body.pinned-mode{background:transparent}
-body.pinned-mode .widget{cursor:default}
+body.pinned-mode .widget{cursor:move}
 body.pinned-mode .widget .rh{display:none !important}
-body.pinned-mode .widget .wl{-webkit-app-region:drag;cursor:move}
-body.pinned-mode .widget .wl button,
-body.pinned-mode .widget .wl input,
-body.pinned-mode .widget .wl select{-webkit-app-region:no-drag}
 /* 개별 잠금(🔒) 배지는 "위치·크기 고정" 기능용인데, 핀 창에선 드래그/리사이즈가
    애초에 창 자체를 통해서만 일어나서 그 배지가 의미가 없다 — 혼동만 주니 숨김. */
 body.pinned-mode .widget[data-locked="1"]::after{display:none}
@@ -317,6 +316,30 @@ body.lang-en .kr-only{display:none}
 .memo-preview .ti{padding:4px 0}
 .memo-area::placeholder{color:var(--lc);opacity:.45}
 
+/* ══ 공유용 캡처 워터마크 (캡처 직전에만 잠깐 화면에 그려짐) ══ */
+.share-watermark{position:absolute;z-index:999999;display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:7px 11px;border-radius:9px;background:rgba(5,10,20,.6);backdrop-filter:blur(6px);pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.share-wm-brand{font-size:12px;font-weight:700;letter-spacing:.06em;color:#e8f0ff;font-family:'Inter',-apple-system,sans-serif}
+.share-wm-tag{font-size:9px;color:#93c5fd;font-family:'JetBrains Mono',monospace}
+
+/* ══ 월드클락 ══ */
+.wclk-list{flex:1;width:100%;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.wclk-item{display:flex;align-items:center;justify-content:space-between;padding:7px 2px;border-bottom:1px solid var(--ibr)}
+.wclk-item:last-child{border-bottom:none}
+.wclk-info{display:flex;flex-direction:column;gap:1px;min-width:0}
+.wclk-city{font-size:11.5px;color:var(--wc);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wclk-sub{font-size:9px;color:var(--lc);font-family:var(--mono)}
+.wclk-time{font-size:15px;color:var(--wc);font-family:var(--mono);font-weight:600;letter-spacing:-.02em;flex-shrink:0;margin-left:8px}
+.wclk-del{background:transparent;border:none;color:var(--dg);cursor:pointer;padding:2px;opacity:0;flex-shrink:0;display:flex;transition:opacity .15s;margin-left:6px}
+.wclk-item:hover .wclk-del{opacity:.7}
+.wclk-del:hover{opacity:1!important}
+.wclk-del .ic{width:11px;height:11px}
+.wclk-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--lc);font-size:11px;text-align:center;padding:0 10px}
+.wclk-add-row{display:flex;gap:5px;margin-top:7px;flex-shrink:0;border-top:1px solid var(--ibr);padding-top:8px}
+.wclk-sel{flex:1;background:var(--ib);border:1px solid var(--ibr);border-radius:6px;color:var(--wc);font-family:var(--wf);font-size:10.5px;padding:5px 6px;outline:none;min-width:0}
+.wclk-addbtn{background:var(--c3);border:none;color:#fff;cursor:pointer;padding:5px 8px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wclk-addbtn:hover{opacity:.85}
+.wclk-addbtn .ic{width:12px;height:12px}
+
 /* ══ 달력 ══ */
 .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;flex-shrink:0}
 .cal-nav{background:#10234066;border:1px solid var(--ibr);color:var(--sc);cursor:pointer;padding:3px 7px;border-radius:5px;display:flex;align-items:center;transition:all .15s}
@@ -423,6 +446,12 @@ body.lang-en .kr-only{display:none}
 .thint{font-size:9.5px;color:var(--sc);text-align:center;margin-top:5px;opacity:.6}
 .pomo-phase{font-size:11px;color:var(--c5);text-align:center;margin-bottom:5px;flex-shrink:0;font-weight:600;letter-spacing:.03em}
 .pomo-count{font-size:10px;color:var(--sc);text-align:center;margin-top:7px;flex-shrink:0;font-family:var(--mono);opacity:.75}
+.pomo-stats{display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:8px;flex-shrink:0}
+.pomo-streak{font-size:10px;color:var(--c5);font-family:var(--mono)}
+.pomo-heat{display:flex;gap:3px}
+.pomo-heat-cell{width:8px;height:8px;border-radius:2px;background:var(--ib)}
+.pomo-heat-cell.on{background:var(--c3);opacity:.55}
+.pomo-heat-cell.hi{background:var(--c3);opacity:1}
 
 /* ══ 게임 타이머 ══ */
 .gt-disp{font-size:26px}
@@ -489,6 +518,9 @@ body.lang-en .kr-only{display:none}
 .hdel{background:transparent;border:none;color:var(--dg);cursor:pointer;opacity:0;display:flex;transition:opacity .15s}
 .hdel .ic{width:11px;height:11px}
 .habit-item:hover .hdel{opacity:.7}
+.hheat{display:flex;gap:2px;flex-shrink:0}
+.hheat-cell{width:6px;height:6px;border-radius:2px;background:var(--ib)}
+.hheat-cell.on{background:var(--c3)}
 .hinput{background:transparent;border:none;border-top:1px solid var(--ibr);color:var(--wc);font-family:var(--wf);font-size:12.5px;padding:8px 0 3px;outline:none;margin-top:4px;width:100%;flex-shrink:0}
 .hinput::placeholder{color:var(--lc);opacity:.55}
 .hdate{font-size:9.5px;color:var(--sc);margin-top:5px;flex-shrink:0;font-family:var(--mono);opacity:.7}
@@ -780,6 +812,15 @@ body.lang-en .kr-only{display:none}
 /* ── 저장된 레이아웃 목록 ── */
 .preset-list{max-height:120px;overflow-y:auto}
 
+/* ── 내장 레이아웃 프리셋 갤러리 ── */
+.bp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bp-card{background:#10234066;border:1px solid var(--ibr);border-radius:9px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .15s}
+body.theme-light .bp-card,body.theme-ice .bp-card{background:#ffffff80}
+.bp-card:hover{background:#2563eb1f;border-color:#2563eb80;transform:translateY(-2px)}
+.bp-card .bp-ic{width:18px;height:18px;color:var(--c5);margin-bottom:5px}
+.bp-card .bp-nm{font-size:10px;font-weight:600;color:var(--wc);margin-bottom:3px}
+.bp-card .bp-ds{font-size:8.5px;color:var(--sc);opacity:.8;line-height:1.35}
+
 /* ── 언어 전환 ── */
 .lang-switch{display:flex;background:var(--bg);border:1px solid var(--ibr);border-radius:8px;padding:2px;gap:2px;flex-shrink:0}
 .lang-opt{background:transparent;border:none;border-radius:6px;color:var(--sc);cursor:pointer;padding:5px 9px;font-size:10.5px;font-family:var(--wf);font-weight:600;transition:all .15s;white-space:nowrap}
@@ -848,7 +889,7 @@ body.lang-en .kr-only{display:none}
 <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 14.5a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5v.2a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H10a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V10a1.6 1.6 0 001.5 1h.2a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></symbol>
 <symbol id="i-power" viewBox="0 0 24 24"><path d="M18.4 6.6a9 9 0 11-12.7 0M12 2v10"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
-<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
+<symbol id="i-worldclock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><ellipse cx="12" cy="12" rx="9" ry="4" opacity=".55"/></symbol><symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></symbol>
 <symbol id="i-check-sq" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></symbol>
 <symbol id="i-note" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6"/></symbol>
 <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></symbol>
@@ -891,6 +932,7 @@ body.lang-en .kr-only{display:none}
 <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13" r="4"/></symbol>
 <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></symbol>
 <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.7"/><circle cx="6" cy="12" r="2.7"/><circle cx="18" cy="19" r="2.7"/><path d="M8.4 10.6l7.2-4.2M8.4 13.4l7.2 4.2"/></symbol>
 <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 21a2 2 0 004 0"/></symbol>
 <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></symbol>
@@ -981,6 +1023,11 @@ body.lang-en .kr-only{display:none}
     <div class="set-l" style="margin-bottom:6px" data-i18n="set.presetList.l">저장된 레이아웃</div>
     <div class="preset-list" id="presetList"></div>
   </div>
+  <div class="set-row" style="border:none;padding-bottom:0;display:block">
+    <div class="set-l" style="margin-bottom:2px" data-i18n="set.builtinPreset.l">미리 만들어진 레이아웃</div>
+    <div class="set-s" style="margin-bottom:8px" data-i18n="set.builtinPreset.s">눌러서 바로 시작해보세요 (지금 배치는 사라져요)</div>
+    <div class="bp-grid" id="builtinPresetGrid"></div>
+  </div>
   <div class="set-row">
     <div><div class="set-l" data-i18n="set.autoPreset.l">시작 시 자동 불러오기</div><div class="set-s" data-i18n="set.autoPreset.s">앱을 켤 때 이 레이아웃으로 자동 시작</div></div>
     <select class="lk-field" id="autoLoadPresetSel" style="max-width:130px"></select>
@@ -1029,6 +1076,7 @@ body.lang-en .kr-only{display:none}
       <div class="wopt" onclick="addWidget('clock')"><svg class="ic"><use href="#i-clock"/></svg><div class="nm" data-i18n="w.clock">시계</div></div>
       <div class="wopt" onclick="addWidget('calendar')"><svg class="ic"><use href="#i-cal"/></svg><div class="nm" data-i18n="w.calendar">달력</div></div>
       <div class="wopt" onclick="addWidget('links')"><svg class="ic"><use href="#i-link"/></svg><div class="nm" data-i18n="w.links">링크</div></div>
+      <div class="wopt" onclick="addWidget('worldclock')"><svg class="ic"><use href="#i-worldclock"/></svg><div class="nm" data-i18n="w.worldclock">월드클락</div></div>
     </div>
     <div class="mdl-s" data-i18n="cat.record">기록</div>
     <div class="wgrid">
@@ -1100,6 +1148,14 @@ body.lang-en .kr-only{display:none}
   <div class="ctx-i" onclick="pickWidgetOpacity(event)"><svg class="ic"><use href="#i-eye"/></svg><span id="ctxOpacityLabel">위젯 투명도</span></div>
   <div class="ctx-i" id="ctxLockItem" onclick="toggleWidgetLock()"><svg class="ic"><use href="#i-lock"/></svg><span id="ctxLockLabel">이 위젯 잠금</span></div>
   <div class="ctx-i" id="ctxPinItem" onclick="pinWidgetFromCtx()"><svg class="ic"><use href="#i-pin"/></svg><span id="ctxPinLabel">항상 위에 표시</span></div>
+  <div class="ctx-i" id="ctxAlignLeftItem" style="display:none" onclick="alignSelected('left')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignLeft">왼쪽 정렬</span></div>
+  <div class="ctx-i" id="ctxAlignHCenterItem" style="display:none" onclick="alignSelected('hcenter')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignHCenter">가로 중앙 정렬</span></div>
+  <div class="ctx-i" id="ctxAlignRightItem" style="display:none" onclick="alignSelected('right')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignRight">오른쪽 정렬</span></div>
+  <div class="ctx-i" id="ctxAlignTopItem" style="display:none" onclick="alignSelected('top')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignTop">위쪽 정렬</span></div>
+  <div class="ctx-i" id="ctxAlignVCenterItem" style="display:none" onclick="alignSelected('vcenter')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignVCenter">세로 중앙 정렬</span></div>
+  <div class="ctx-i" id="ctxAlignBottomItem" style="display:none" onclick="alignSelected('bottom')"><svg class="ic"><use href="#i-ruler"/></svg><span data-i18n="ctx.alignBottom">아래쪽 정렬</span></div>
+  <div class="ctx-i" id="ctxDistHItem" style="display:none" onclick="distributeSelected('h')"><svg class="ic"><use href="#i-swap"/></svg><span data-i18n="ctx.distH">가로 균등 분산</span></div>
+  <div class="ctx-i" id="ctxDistVItem" style="display:none" onclick="distributeSelected('v')"><svg class="ic"><use href="#i-swap"/></svg><span data-i18n="ctx.distV">세로 균등 분산</span></div>
   <div class="ctx-i dgr" onclick="delWidget()"><svg class="ic"><use href="#i-trash"/></svg><span id="ctxDeleteLabel">위젯 삭제</span></div>
 </div>
 <input type="file" id="widgetBgFileInput" accept="image/*" style="display:none">
@@ -1150,7 +1206,8 @@ const DEFAULT_SIZE={
   gametimer:{width:'210px',height:'195px'},
   g2048:{width:'230px',height:'290px'},
   minesweeper:{width:'250px',height:'300px'},
-  tictactoe:{width:'200px',height:'250px'}
+  tictactoe:{width:'200px',height:'250px'},
+  worldclock:{width:'230px',height:'260px'}
 }
 
 // ── 위젯 "항상 위에 표시"(핀) 창 여부 ──
@@ -1406,6 +1463,11 @@ const I18N={
     'set.sound.l':'알림 소리','set.sound.s':'타이머·뽀모도로·알람이 다 됐을 때 나는 소리',
     'wi.sound.default':'기본','wi.sound.chime':'차임벨','wi.sound.digital':'디지털','wi.sound.soft':'부드럽게',
     'set.presetList.l':'저장된 레이아웃',
+    'set.builtinPreset.l':'미리 만들어진 레이아웃','set.builtinPreset.s':'눌러서 바로 시작해보세요 (지금 배치는 사라져요)',
+    'bp.minimal.nm':'미니멀','bp.minimal.ds':'시계·할일·메모',
+    'bp.productivity.nm':'생산성','bp.productivity.ds':'시계·할일·D-day·뽀모도로·메모·링크',
+    'bp.gaming.nm':'게임','bp.gaming.ds':'게임타이머·2048·주사위·지뢰찾기',
+    'bp.confirmApply':'"{name}" 레이아웃을 적용할까요? 지금 배치는 사라져요 (필요하면 먼저 다른 이름으로 저장해두세요).',
     'set.backup.l':'백업','set.backup.s':'모든 위젯과 설정을 파일로 저장',
     'set.restore.l':'복원','set.restore.s':'백업 파일에서 불러오기',
     'confirm.restore':'지금 위젯과 설정이 백업 파일 내용으로 전부 바뀌어요. 계속할까요?',
@@ -1430,6 +1492,7 @@ const I18N={
     'preset.promptName':'이 배치를 어떤 이름으로 저장할까요?',
     'preset.empty':'아직 저장된 레이아웃이 없어요',
     'preset.confirmSwitch':'"{name}" 배치로 바꿀까요? 지금 배치는 사라져요 (필요하면 먼저 다른 이름으로 저장해두세요).',
+    'preset.limitReached':'저장된 레이아웃은 최대 5개까지예요. 하나 지우고 다시 저장해주세요.',
     'w.clock':'시계','w.calendar':'달력','w.links':'링크','w.todo':'할일','w.memo':'메모',
     'w.habit':'습관','w.counter':'카운터','w.clipboard':'클립보드','w.news':'뉴스',
     'w.exchange':'환율','w.stock':'주식','w.sports':'스포츠','w.weather':'날씨',
@@ -1437,6 +1500,8 @@ const I18N={
     'w.convert':'단위변환','w.dday':'D-day','w.translate':'번역기','w.colorpick':'색상',
     'w.chart':'그래프','w.launcher':'바로가기','w.screencap':'캡처',
     'w.quote':'명언','w.dice':'주사위','w.snake':'스네이크','w.g2048':'2048','w.minesweeper':'지뢰찾기','w.tictactoe':'틱택토','w.gametimer':'게임 타이머',
+    'w.worldclock':'월드클락',
+    'wi.wc.empty':'추가할 도시를 선택해주세요','wi.wc.otherDay':'(다른 날)',
     'wi.cal.memoPh':'이 날 메모',
     'wi.todo.ph':'할일 입력 후 Enter','wi.todo.dueTitle':'날짜 지정',
     'wi.memo.ph':'자유롭게 적어보세요','wi.memo.previewTitle':'마크다운 미리보기 — **굵게**, "- [ ] 할일"','wi.memo.previewEmpty':'미리 볼 내용이 없어요',
@@ -1471,7 +1536,7 @@ const I18N={
     'wi.cap.shotErr':'캡처 중 오류가 발생했어요','wi.cap.recErr':'녹화 중 오류가 발생했어요','wi.cap.saveErr':'녹화 저장 중 오류가 발생했어요',
     'wi.timer.confirmHint':'Enter로 확정 (MM:SS)','wi.timer.pause':'일시정지','wi.timer.resume':'재개',
     'wi.timer.doneTitle':'타이머 완료','wi.timer.doneBody':'설정한 시간이 다 됐어요',
-    'wi.pomo.shortBreak':'짧은 휴식','wi.pomo.longBreak':'긴 휴식','wi.pomo.doneCount':'완료 {n}',
+    'wi.pomo.shortBreak':'짧은 휴식','wi.pomo.longBreak':'긴 휴식','wi.pomo.doneCount':'완료 {n}','wi.pomo.streak':'🔥 {n}일 연속',
     'wi.pomo.notifyWork':'휴식 끝! 다시 집중할 시간이에요','wi.pomo.notifyBreak':'수고했어요, 휴식 시간이에요',
     'wi.alarm.empty':'시간을 등록해서 알람을 추가해보세요','wi.alarm.notifyBody':'{time} 알람이에요',
     'wi.snake.score':'점수 {n}','wi.snake.best':'최고 {n}','wi.snake.restart':'다시 시작','wi.snake.stop':'정지',
@@ -1485,6 +1550,9 @@ const I18N={
     'ctx.setBg':'배경 이미지 설정','ctx.clearBg':'배경 이미지 지우기',
     'ctx.setColor':'위젯 색상 설정','ctx.clearColor':'위젯 색상 초기화',
     'ctx.opacity':'위젯 투명도',
+    'ctx.alignLeft':'왼쪽 정렬','ctx.alignHCenter':'가로 중앙 정렬','ctx.alignRight':'오른쪽 정렬',
+    'ctx.alignTop':'위쪽 정렬','ctx.alignVCenter':'세로 중앙 정렬','ctx.alignBottom':'아래쪽 정렬',
+    'ctx.distH':'가로 균등 분산','ctx.distV':'세로 균등 분산',
     'wi.bg.notImage':'이미지 파일만 선택할 수 있어요','wi.bg.tooBig':'이미지 용량이 너무 커서 저장할 수 없어요','wi.bg.fail':'이미지를 적용하지 못했어요',
     'wi.dice.heads':'앞','wi.dice.tails':'뒤',
     'wi.launcher.discord':'디스코드 열기','wi.launcher.discordFail':'디스코드가 설치돼있지 않은 것 같아요',
@@ -1504,6 +1572,7 @@ const I18N={
     'theme.name.sunset':'선셋','theme.name.forest':'포레스트','theme.name.aurora':'오로라','theme.name.cherry':'체리','theme.name.mono':'모노','theme.name.custom':'커스텀',
     'wi.sports.scheduled':'예정','wi.sports.ended':'종료','wi.sports.live':'진행중','wi.sports.searchTerm':'경기 일정',
     'wi.cap.stopRec':'중지','wi.cap.countdownShot':'곧 캡처합니다','wi.cap.countdownRec':'녹화를 시작합니다',
+    'wi.cap.share':'공유용','wi.cap.countdownShare':'곧 공유용 캡처를 찍어요','wi.cap.shareEmpty':'화면에 위젯이 하나도 없어요',
     'wi.calc.error':'오류',
     'wi.chart.empty':'데이터를 추가해봐',
     'wi.launcher.noName':'이름 없음',
@@ -1528,6 +1597,11 @@ const I18N={
     'set.sound.l':'Alert sound','set.sound.s':'The sound played when a timer, pomodoro, or alarm finishes',
     'wi.sound.default':'Default','wi.sound.chime':'Chime','wi.sound.digital':'Digital','wi.sound.soft':'Soft',
     'set.presetList.l':'Saved layouts',
+    'set.builtinPreset.l':'Built-in layouts','set.builtinPreset.s':'Tap to start fresh (this replaces your current layout)',
+    'bp.minimal.nm':'Minimal','bp.minimal.ds':'Clock, To-do, Note',
+    'bp.productivity.nm':'Productivity','bp.productivity.ds':'Clock, To-do, D-day, Pomodoro, Note, Links',
+    'bp.gaming.nm':'Gaming','bp.gaming.ds':'Game Timer, 2048, Dice, Minesweeper',
+    'bp.confirmApply':'Apply the "{name}" layout? Your current layout will be replaced (save it under another name first if you want to keep it).',
     'set.backup.l':'Backup','set.backup.s':'Save all widgets and settings to a file',
     'set.restore.l':'Restore','set.restore.s':'Load from a backup file',
     'confirm.restore':'This will replace all current widgets and settings with the backup file. Continue?',
@@ -1552,6 +1626,7 @@ const I18N={
     'preset.promptName':'Name this layout:',
     'preset.empty':'No saved layouts yet',
     'preset.confirmSwitch':'Switch to layout "{name}"? Your current layout will be replaced (save it under another name first if you want to keep it).',
+    'preset.limitReached':'You can save up to 5 layouts. Delete one first, then try saving again.',
     'w.clock':'Clock','w.calendar':'Calendar','w.links':'Links','w.todo':'To-do','w.memo':'Notes',
     'w.habit':'Habits','w.counter':'Counter','w.clipboard':'Clipboard','w.news':'News',
     'w.exchange':'Exchange Rate','w.stock':'Stocks','w.sports':'Sports','w.weather':'Weather',
@@ -1559,6 +1634,8 @@ const I18N={
     'w.convert':'Unit Convert','w.dday':'D-day','w.translate':'Translate','w.colorpick':'Color Picker',
     'w.chart':'Chart','w.launcher':'Launcher','w.screencap':'Capture',
     'w.quote':'Quote','w.dice':'Dice','w.snake':'Snake','w.g2048':'2048','w.minesweeper':'Minesweeper','w.tictactoe':'Tic-Tac-Toe','w.gametimer':'Game Timer',
+    'w.worldclock':'World Clock',
+    'wi.wc.empty':'Pick a city to add','wi.wc.otherDay':'(different day)',
     'wi.cal.memoPh':'Note for this day',
     'wi.todo.ph':'Type a task and press Enter','wi.todo.dueTitle':'Set due date',
     'wi.memo.ph':'Write anything here','wi.memo.previewTitle':'Markdown preview — **bold**, "- [ ] task"','wi.memo.previewEmpty':'Nothing to preview yet',
@@ -1593,7 +1670,7 @@ const I18N={
     'wi.cap.shotErr':'Something went wrong taking the screenshot','wi.cap.recErr':'Something went wrong while recording','wi.cap.saveErr':'Something went wrong saving the recording',
     'wi.timer.confirmHint':'Press Enter to confirm (MM:SS)','wi.timer.pause':'Pause','wi.timer.resume':'Resume',
     'wi.timer.doneTitle':'Timer done','wi.timer.doneBody':'Your timer is up',
-    'wi.pomo.shortBreak':'Short break','wi.pomo.longBreak':'Long break','wi.pomo.doneCount':'Done {n}',
+    'wi.pomo.shortBreak':'Short break','wi.pomo.longBreak':'Long break','wi.pomo.doneCount':'Done {n}','wi.pomo.streak':'🔥 {n}-day streak',
     'wi.pomo.notifyWork':'Break\'s over! Time to focus again','wi.pomo.notifyBreak':'Nice work — take a break',
     'wi.alarm.empty':'Set a time to add an alarm','wi.alarm.notifyBody':'It\'s {time}',
     'wi.snake.score':'Score {n}','wi.snake.best':'Best {n}','wi.snake.restart':'Restart','wi.snake.stop':'Stop',
@@ -1607,6 +1684,9 @@ const I18N={
     'ctx.setBg':'Set background image','ctx.clearBg':'Clear background image',
     'ctx.setColor':'Set widget color','ctx.clearColor':'Reset widget color',
     'ctx.opacity':'Widget opacity',
+    'ctx.alignLeft':'Align left','ctx.alignHCenter':'Align center (horizontal)','ctx.alignRight':'Align right',
+    'ctx.alignTop':'Align top','ctx.alignVCenter':'Align middle (vertical)','ctx.alignBottom':'Align bottom',
+    'ctx.distH':'Distribute horizontally','ctx.distV':'Distribute vertically',
     'wi.bg.notImage':'Please choose an image file','wi.bg.tooBig':'This image is too large to save','wi.bg.fail':'Could not apply the image',
     'wi.dice.heads':'Heads','wi.dice.tails':'Tails',
     'wi.launcher.discord':'Open Discord','wi.launcher.discordFail':'Discord doesn\'t seem to be installed',
@@ -1626,6 +1706,7 @@ const I18N={
     'theme.name.sunset':'Sunset','theme.name.forest':'Forest','theme.name.aurora':'Aurora','theme.name.cherry':'Cherry','theme.name.mono':'Mono','theme.name.custom':'Custom',
     'wi.sports.scheduled':'Scheduled','wi.sports.ended':'Ended','wi.sports.live':'Live','wi.sports.searchTerm':'game schedule',
     'wi.cap.stopRec':'Stop','wi.cap.countdownShot':'Capturing in a moment','wi.cap.countdownRec':'Starting recording',
+    'wi.cap.share':'Share','wi.cap.countdownShare':'Taking a share capture in a moment','wi.cap.shareEmpty':'There are no widgets on screen',
     'wi.calc.error':'Error',
     'wi.chart.empty':'Try adding some data',
     'wi.launcher.noName':'No name',
@@ -1784,6 +1865,25 @@ if(!PINNED_ID){
   // 실제로 클릭 가능한 .topbar-r(버튼들)에 붙인다.
   document.querySelectorAll('.topbar-r,#modal,#ctx-menu,#cpick,#wopac,#theme-panel,#settings-panel,#tourCard').forEach(rm)
 }
+
+// ── 텍스트 입력창 클릭 시 실제 OS 키보드 포커스 확보 ──
+// 이 창은 기본이 클릭 통과(setIgnoreMouseEvents)인 투명 오버레이라서, 버튼
+// 클릭이나 체크박스 토글처럼 "마우스 이벤트만" 필요한 조작은 잘 되는데,
+// 텍스트를 실제로 타이핑하려면 이 창이 진짜 OS 레벨 키보드 포커스를 갖고
+// 있어야 한다 — 근데 setIgnoreMouseEvents(false)로 클릭 통과를 풀어주는 것만
+// 으론 그게 자동으로 따라오지 않는다(main.js가 win.focus()를 따로 호출한 적이
+// 한 번도 없었음). 그래서 "레이아웃 저장" 이름 입력창처럼 글자를 쳐야 하는
+// 곳에서 클릭은 되는데 타이핑이 하나도 안 먹히는 버그가 있었다.
+// 다만 이걸 마우스가 위젯 위를 그냥 지나가기만 해도(hover) 매번 포커스를
+// 가져가게 하면, 게임/영상 보는 중에 위젯 위로 커서만 스쳐도 그 창의 포커스를
+// 뺏어버리는 훨씬 나쁜 문제가 생긴다 — 그래서 반드시 "input/textarea/
+// contenteditable을 실제로 마우스다운했을 때"만, 캡처 단계에서 한 번 요청한다.
+document.addEventListener('mousedown',e=>{
+  const t=e.target
+  if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)){
+    try{ipcRenderer.send('focus-window')}catch(err){}
+  }
+},true)
 
 // ── 커스텀 테마: hex 색상 유틸 ──
 function hexToRgb(hex){
@@ -2159,12 +2259,86 @@ if(presetSaveBtn){
     const name=await textPrompt(t('preset.promptName'))
     if(!name)return
     const presets=loadPresets()
+    // 같은 이름으로 덮어쓰는 건 개수가 안 늘어나니 허용하고, 새 이름인데
+    // 이미 5개 꽉 찼으면 막는다.
+    const isNew=!Object.prototype.hasOwnProperty.call(presets,name)
+    if(isNew&&Object.keys(presets).length>=5){
+      alert(t('preset.limitReached'))
+      return
+    }
     presets[name]=widgetSnapshot()
     savePresets(presets)
     renderPresetList()
   })
 }
 renderPresetList()
+
+// ==========================================
+// 내장 레이아웃 프리셋 갤러리 (미리 만들어둔 시작용 배치)
+// ── 기존 "저장된 레이아웃"과 똑같이 전체 배치를 통째로 바꾸는 방식이라
+// (widgetSnapshot 저장 없이 미리 좌표를 박아둔 버전일 뿐), 적용 전에
+// confirm()으로 한 번 더 확인시키고 적용 로직도 그대로 재사용한다.
+// ==========================================
+const BUILTIN_PRESETS={
+  minimal:{
+    icon:'i-clock',
+    layout:[
+      {type:'clock',left:'30px',top:'70px',width:'210px',height:'220px'},
+      {type:'todo',left:'270px',top:'70px',width:'230px',height:'320px'},
+      {type:'memo',left:'530px',top:'70px',width:'260px',height:'320px'}
+    ]
+  },
+  productivity:{
+    icon:'i-check-sq',
+    layout:[
+      {type:'clock',left:'30px',top:'70px',width:'220px',height:'200px'},
+      {type:'todo',left:'270px',top:'70px',width:'240px',height:'340px'},
+      {type:'dday',left:'530px',top:'70px',width:'220px',height:'170px'},
+      {type:'pomodoro',left:'30px',top:'290px',width:'220px',height:'300px'},
+      {type:'links',left:'530px',top:'260px',width:'220px',height:'230px'},
+      {type:'memo',left:'270px',top:'430px',width:'240px',height:'230px'}
+    ]
+  },
+  gaming:{
+    icon:'i-gamepad',
+    layout:[
+      {type:'gametimer',left:'30px',top:'70px',width:'210px',height:'195px'},
+      {type:'g2048',left:'280px',top:'70px',width:'230px',height:'290px'},
+      {type:'dice',left:'30px',top:'285px',width:'200px',height:'200px'},
+      {type:'minesweeper',left:'280px',top:'380px',width:'250px',height:'300px'}
+    ]
+  }
+}
+function renderBuiltinPresetGrid(){
+  const box=document.getElementById('builtinPresetGrid')
+  if(!box)return
+  box.innerHTML=''
+  Object.keys(BUILTIN_PRESETS).forEach(key=>{
+    const p=BUILTIN_PRESETS[key]
+    const card=document.createElement('div');card.className='bp-card'
+    const ic=svgIc(p.icon,'bp-ic')
+    const nm=document.createElement('div');nm.className='bp-nm';nm.setAttribute('data-i18n','bp.'+key+'.nm');nm.textContent=t('bp.'+key+'.nm')
+    const ds=document.createElement('div');ds.className='bp-ds';ds.setAttribute('data-i18n','bp.'+key+'.ds');ds.textContent=t('bp.'+key+'.ds')
+    card.appendChild(ic);card.appendChild(nm);card.appendChild(ds)
+    card.addEventListener('click',e=>{e.stopPropagation();applyBuiltinPreset(key)})
+    box.appendChild(card)
+  })
+}
+function applyBuiltinPreset(key){
+  try{
+    const p=BUILTIN_PRESETS[key]
+    if(!p||!Array.isArray(p.layout))return
+    if(!confirm(t('bp.confirmApply',{name:t('bp.'+key+'.nm')})))return
+    skipAutoSave=true
+    try{ipcRenderer.send('close-all-pinned')}catch(e){}
+    try{localStorage.removeItem('wcw-pinned')}catch(e){}
+    localStorage.setItem('wcw',JSON.stringify(p.layout))
+    location.reload()
+  }catch(err){
+    try{ipcRenderer.send('renderer-error','applyBuiltinPreset failed: '+(err&&err.stack?err.stack:String(err)))}catch(e2){}
+  }
+}
+renderBuiltinPresetGrid()
 
 // ── 시작 시 자동으로 불러올 레이아웃 선택 ──
 function renderAutoPresetSelect(names){
@@ -2501,6 +2675,10 @@ function textPrompt(title){
       _textPromptResolver=resolve
       modal.classList.add('show')
       sm(false)
+      // input.focus()는 DOM(렌더러)에만 포커스를 주는 거라, 이 창 자체가 진짜
+      // OS 키보드 포커스를 갖고 있지 않으면(기본이 클릭 통과인 투명 오버레이라
+      // 그럴 때가 많음) 타이핑이 아예 안 먹힌다 — 그래서 같이 요청해준다.
+      try{ipcRenderer.send('focus-window')}catch(err){}
       setTimeout(()=>input.focus(),50)
       // Enter로 확인, Esc로 취소 — 한 번 쓰고 버리는 리스너라 {once:true}로
       // 등록해서 중복 등록이 쌓이지 않게 한다.
@@ -2570,6 +2748,18 @@ function showCtx(e,w){
   if(colorClearItem)colorClearItem.style.display=w.dataset.hasColor==='1'?'flex':'none'
   const opLbl=document.getElementById('ctxOpacityLabel')
   if(opLbl)opLbl.textContent=wt('ctx.opacity')
+  // 정렬은 2개 이상, 균등 분산은 셋 사이 간격을 맞추는 개념이라 3개 이상
+  // 선택했을 때만 의미가 있어서 그 아래에서는 메뉴 항목 자체를 숨긴다.
+  const isAlignGroup=selectedWidgets.has(w.id)&&selectedWidgets.size>=2
+  const isDistGroup=selectedWidgets.has(w.id)&&selectedWidgets.size>=3
+  ;['ctxAlignLeftItem','ctxAlignHCenterItem','ctxAlignRightItem','ctxAlignTopItem','ctxAlignVCenterItem','ctxAlignBottomItem'].forEach(id=>{
+    const el=document.getElementById(id)
+    if(el)el.style.display=isAlignGroup?'flex':'none'
+  })
+  ;['ctxDistHItem','ctxDistVItem'].forEach(id=>{
+    const el=document.getElementById(id)
+    if(el)el.style.display=isDistGroup?'flex':'none'
+  })
 }
 // 전체 배치잠금(설정 패널)과 별개로, 위젯 하나만 위치/크기를 고정하는 개별 잠금.
 // dataset.locked==='1'이면 그 위젯만 드래그/리사이즈가 안 먹히고 크기조절 손잡이도 숨는다.
@@ -2588,6 +2778,93 @@ function toggleWidgetLock(){
   })
   save()
   document.getElementById('ctx-menu').classList.remove('show')
+}
+
+// ── 여러 위젯 정렬/균등 분산 ──
+// 우클릭한 위젯이 다중 선택(Ctrl+클릭)에 포함돼있으면 선택된 것 전체가
+// 대상이고, 아니면 지금 우클릭한 위젯 하나만 대상이다(정렬/분산은 최소
+// 2개 이상이어야 의미가 있어서 실제로는 메뉴에서 그룹일 때만 노출된다).
+function selectedGroupIds(){
+  if(ctxW&&selectedWidgets.has(ctxW.id)&&selectedWidgets.size>1)return [...selectedWidgets]
+  return ctxW?[ctxW.id]:[]
+}
+function widgetRect(id){
+  const el=document.getElementById(id)
+  if(!el)return null
+  return {
+    id,
+    locked:el.dataset.locked==='1',
+    left:parseInt(el.style.left)||0,
+    top:parseInt(el.style.top)||0,
+    width:el.offsetWidth,
+    height:el.offsetHeight
+  }
+}
+function alignSelected(mode){
+  try{
+    const ids=selectedGroupIds()
+    if(ids.length<2)return
+    const rects=ids.map(widgetRect).filter(Boolean)
+    if(rects.length<2)return
+    const minLeft=Math.min(...rects.map(r=>r.left))
+    const maxRight=Math.max(...rects.map(r=>r.left+r.width))
+    const minTop=Math.min(...rects.map(r=>r.top))
+    const maxBottom=Math.max(...rects.map(r=>r.top+r.height))
+    const centerX=(minLeft+maxRight)/2
+    const centerY=(minTop+maxBottom)/2
+    rects.forEach(r=>{
+      if(r.locked)return
+      const el=document.getElementById(r.id)
+      if(!el)return
+      if(mode==='left')el.style.left=minLeft+'px'
+      else if(mode==='right')el.style.left=(maxRight-r.width)+'px'
+      else if(mode==='hcenter')el.style.left=Math.round(centerX-r.width/2)+'px'
+      else if(mode==='top')el.style.top=minTop+'px'
+      else if(mode==='bottom')el.style.top=(maxBottom-r.height)+'px'
+      else if(mode==='vcenter')el.style.top=Math.round(centerY-r.height/2)+'px'
+    })
+    save()
+  }catch(err){
+    try{ipcRenderer.send('renderer-error','alignSelected failed: '+(err&&err.stack?err.stack:String(err)))}catch(e2){}
+  }finally{
+    document.getElementById('ctx-menu').classList.remove('show')
+  }
+}
+function distributeSelected(axis){
+  try{
+    const ids=selectedGroupIds()
+    if(ids.length<3)return
+    const rects=ids.map(widgetRect).filter(Boolean)
+    if(rects.length<3)return
+    if(axis==='h'){
+      rects.sort((a,b)=>a.left-b.left)
+      const first=rects[0],last=rects[rects.length-1]
+      const span=(last.left+last.width)-first.left
+      const totalW=rects.reduce((s,r)=>s+r.width,0)
+      const gap=(span-totalW)/(rects.length-1)
+      let x=first.left
+      rects.forEach(r=>{
+        if(!r.locked){const el=document.getElementById(r.id);if(el)el.style.left=Math.round(x)+'px'}
+        x+=r.width+gap
+      })
+    }else{
+      rects.sort((a,b)=>a.top-b.top)
+      const first=rects[0],last=rects[rects.length-1]
+      const span=(last.top+last.height)-first.top
+      const totalH=rects.reduce((s,r)=>s+r.height,0)
+      const gap=(span-totalH)/(rects.length-1)
+      let y=first.top
+      rects.forEach(r=>{
+        if(!r.locked){const el=document.getElementById(r.id);if(el)el.style.top=Math.round(y)+'px'}
+        y+=r.height+gap
+      })
+    }
+    save()
+  }catch(err){
+    try{ipcRenderer.send('renderer-error','distributeSelected failed: '+(err&&err.stack?err.stack:String(err)))}catch(e2){}
+  }finally{
+    document.getElementById('ctx-menu').classList.remove('show')
+  }
 }
 
 // ── 위젯 "항상 위에 표시"(핀) ──────────────────────────────────────
@@ -2687,6 +2964,45 @@ function setupPinnedWidgetWindow(w){
   document.addEventListener('mousedown',e=>{
     if(!menu.contains(e.target))menu.classList.remove('show')
   })
+
+  // ── 자유 드래그: 위젯 어디를 잡든 창 자체가 그만큼 움직인다 ──
+  // 예전엔 헤더(.wl)만 OS 드래그 손잡이(-webkit-app-region)라서 정확히 그
+  // 좁은 줄을 잡아야 했다 — "고정된 것처럼 안 움직인다"는 느낌을 준 원인.
+  // 대신 메인 창의 makeDrag()와 같은 방식으로 버튼·입력창·체크박스처럼 실제
+  // 클릭이 필요한 요소만 걸러내고, 나머지는 어디를 잡아도 마우스 이동량만큼
+  // main.js에 알려서 창 위치(setPosition)를 옮기게 한다. 살짝 눌렀다 떼기만
+  // 하는 "클릭"은 이동량이 0이라 창이 안 움직이고, mousedown에서
+  // stopPropagation을 안 하기 때문에 그 안의 클릭 리스너(지뢰찾기 칸 등)는
+  // 그대로 정상 동작한다 — 메인 창에서 위젯 전체가 드래그 손잡이면서도
+  // 내부 클릭이 다 되는 것과 같은 원리.
+  let pinDrag=false,pdsx=0,pdsy=0
+  function isPinDragExcluded(target){
+    const tag=target&&target.tagName
+    if(tag==='INPUT'||tag==='BUTTON'||tag==='TEXTAREA'||tag==='SELECT'||tag==='OPTION'||tag==='A'||tag==='CANVAS')return true
+    if(!target.closest)return false
+    if(target.closest('.rh'))return true
+    if(target.closest('[contenteditable="true"]'))return true
+    return false
+  }
+  w.addEventListener('mousedown',e=>{
+    if(e.button!==0)return
+    if(isPinDragExcluded(e.target))return
+    pinDrag=true
+    pdsx=e.screenX;pdsy=e.screenY
+    try{ipcRenderer.send('pinned-drag-start',PINNED_ID)}catch(err){}
+    e.preventDefault()
+  })
+  document.addEventListener('mousemove',e=>{
+    if(!pinDrag)return
+    try{ipcRenderer.send('pinned-drag-move',{id:PINNED_ID,dx:e.screenX-pdsx,dy:e.screenY-pdsy})}catch(err){}
+  })
+  document.addEventListener('mouseup',()=>{
+    if(pinDrag){
+      pinDrag=false
+      try{ipcRenderer.send('pinned-drag-end',PINNED_ID)}catch(err){}
+    }
+  })
+
   function fit(){
     const tw=Math.max(160,window.innerWidth-PIN_MARGIN*2)
     const th=Math.max(80,window.innerHeight-PIN_MARGIN*2)
@@ -3185,6 +3501,42 @@ function makeResize(w){
 // 위젯들을 다시 저장해버렸기 때문.)
 // (skipAutoSave 선언은 스크립트 맨 위로 옮겼음 — 여기 있던 게 TDZ 버그의 원인이었음)
 
+// ── 공유용 스크린샷: 위젯들이 모여있는 영역 + 워터마크 ──
+// 다른 프로그램들 위에 화면 전체를 덮는 투명 오버레이 창을 쓰고 있다는 점을
+// 이용해서, desktopCapturer로 화면 원본을 찍은 뒤 위젯들의 바운딩 박스만큼만
+// 물리 픽셀 좌표로 잘라낸다. 워터마크는 이미지 합성 라이브러리 없이, 캡처
+// 직전에 실제 DOM에 잠깐 띄워서 화면에 같이 찍히게 하는 방식을 쓴다.
+function computeWidgetsBBox(){
+  const widgets=document.querySelectorAll('.widget')
+  if(!widgets.length)return null
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity
+  widgets.forEach(el=>{
+    const l=parseFloat(el.style.left)||0,t=parseFloat(el.style.top)||0
+    const r=l+el.offsetWidth,b=t+el.offsetHeight
+    if(l<minX)minX=l
+    if(t<minY)minY=t
+    if(r>maxX)maxX=r
+    if(b>maxY)maxY=b
+  })
+  if(!isFinite(minX)||!isFinite(minY)||!isFinite(maxX)||!isFinite(maxY))return null
+  const pad=20
+  const local={x:minX-pad,y:minY-pad,width:(maxX-minX)+pad*2,height:(maxY-minY)+pad*2}
+  const screenAbs={x:(window.screenX||0)+local.x,y:(window.screenY||0)+local.y,width:local.width,height:local.height}
+  return {local,screenAbs}
+}
+function showWatermarkBadge(bbox){
+  try{
+    const badge=document.createElement('div')
+    badge.className='share-watermark'
+    badge.innerHTML='<span class="share-wm-brand">Wesk</span><span class="share-wm-tag">@wcw_widget</span>'
+    const bw=150
+    badge.style.left=Math.max(bbox.local.x+8,bbox.local.x+bbox.local.width-bw)+'px'
+    badge.style.top=(bbox.local.y+bbox.local.height-34)+'px'
+    const host=document.getElementById('wcon')||document.body
+    host.appendChild(badge)
+    return badge
+  }catch(e){return null}
+}
 function widgetSnapshot(){
   const d=[]
   document.querySelectorAll('.widget').forEach(w=>d.push({id:w.id,type:w.dataset.type,left:w.style.left,top:w.style.top,width:w.style.width,height:w.style.height,z:parseInt(w.style.zIndex)||1,locked:w.dataset.locked==='1'}))
@@ -3229,7 +3581,7 @@ links:'<div class="wl" data-i18n="w.links">'+icHTML('i-link')+'링크</div><div 
 
 timer:'<div class="wl" data-i18n="w.timer">'+icHTML('i-timer')+'타이머</div><div class="wc" style="justify-content:center;align-items:center"><div class="tmode"><button class="tmbtn active tmr" data-i18n="w.timer">타이머</button><button class="tmbtn tsw" data-i18n="wi.timer.stopwatch">스톱워치</button></div><div class="tdisp" style="font-size:36px">00:00.00</div><div class="thint" data-i18n="wi.timer.hint">클릭해서 시간 입력</div><div class="tpres"><button class="tpre" data-i18n="wi.timer.p1">1분</button><button class="tpre" data-i18n="wi.timer.p5">5분</button><button class="tpre" data-i18n="wi.timer.p10">10분</button><button class="tpre" data-i18n="wi.timer.p25">25분</button></div><div class="tctrls"><button class="tbtn primary tstart" data-i18n="common.start">시작</button><button class="tbtn treset" data-i18n="common.reset">초기화</button></div></div><div class="rh"></div>',
 
-pomodoro:'<div class="wl" data-i18n="w.pomodoro">'+icHTML('i-tomato')+'뽀모도로</div><div class="wc" style="justify-content:center;align-items:center"><div class="pomo-phase" data-i18n="wi.pomo.focus">집중</div><div class="tdisp" style="font-size:36px">25:00</div><div class="pomo-count">완료 0</div><div class="tctrls"><button class="tbtn primary pstart" data-i18n="common.start">시작</button><button class="tbtn preset" data-i18n="common.reset">초기화</button><button class="tbtn pskip" data-i18n="wi.pomo.skip">건너뛰기</button></div></div><div class="rh"></div>',
+pomodoro:'<div class="wl" data-i18n="w.pomodoro">'+icHTML('i-tomato')+'뽀모도로</div><div class="wc" style="justify-content:center;align-items:center"><div class="pomo-phase" data-i18n="wi.pomo.focus">집중</div><div class="tdisp" style="font-size:36px">25:00</div><div class="pomo-count">완료 0</div><div class="pomo-stats"><span class="pomo-streak"></span><div class="pomo-heat"></div></div><div class="tctrls"><button class="tbtn primary pstart" data-i18n="common.start">시작</button><button class="tbtn preset" data-i18n="common.reset">초기화</button><button class="tbtn pskip" data-i18n="wi.pomo.skip">건너뛰기</button></div></div><div class="rh"></div>',
 
 calc:'<div class="wl" data-i18n="w.calc">'+icHTML('i-calc')+'계산기</div><div class="wc"><div class="calc-disp"><div class="calc-expr"></div><div class="calc-res">0</div></div><div class="calc-grid"><button class="cbtn2 clr">C</button><button class="cbtn2 op">±</button><button class="cbtn2 op">%</button><button class="cbtn2 op">÷</button><button class="cbtn2">7</button><button class="cbtn2">8</button><button class="cbtn2">9</button><button class="cbtn2 op">×</button><button class="cbtn2">4</button><button class="cbtn2">5</button><button class="cbtn2">6</button><button class="cbtn2 op">−</button><button class="cbtn2">1</button><button class="cbtn2">2</button><button class="cbtn2">3</button><button class="cbtn2 op">+</button><button class="cbtn2" style="grid-column:span 2">0</button><button class="cbtn2">.</button><button class="cbtn2 eq">=</button></div></div><div class="rh"></div>',
 
@@ -3255,7 +3607,7 @@ clipboard:'<div class="wl" data-i18n="w.clipboard">'+icHTML('i-clipboard')+'클�
 
 launcher:'<div class="wl" data-i18n="w.launcher">'+icHTML('i-launch')+'바로가기</div><div class="launch-list"></div><button class="lk-quickbtn launch-discord-btn" data-i18n="wi.launcher.discord">'+icHTML('i-discord')+'디스코드 열기</button><input class="lk-field launch-path" data-i18n-placeholder="wi.launcher.pathPh" placeholder="경로 붙여넣기 또는 파일을 여기로 끌어오기"><div class="launch-row2"><input class="lk-field launch-name" data-i18n-placeholder="common.nameOptionalPh" placeholder="이름(선택)"><button class="lk-addbtn launch-addbtn">'+icHTML('i-plus')+'</button></div><div class="launch-msg"></div><div class="rh"></div>',
 
-screencap:'<div class="wl" data-i18n="w.screencap">'+icHTML('i-camera')+'캡처</div><div class="wc" style="justify-content:center;align-items:center"><div class="tdisp cap-timer" style="font-size:22px">00:00</div><div class="thint cap-status" data-i18n="wi.cap.idle">대기 중</div><div class="tctrls" style="margin-top:8px"><button class="tbtn primary cap-shot" data-i18n="wi.cap.shot">'+icHTML('i-camera')+'캡처</button><button class="tbtn cap-rec" data-i18n="wi.cap.rec">'+icHTML('i-video')+'녹화</button></div><div class="tctrls" style="margin-top:5px"><button class="tbtn cap-openfolder" data-i18n="common.folder">'+icHTML('i-folder')+'폴더</button></div><div class="launch-msg cap-msg"></div></div><div class="rh"></div>',
+screencap:'<div class="wl" data-i18n="w.screencap">'+icHTML('i-camera')+'캡처</div><div class="wc" style="justify-content:center;align-items:center"><div class="tdisp cap-timer" style="font-size:22px">00:00</div><div class="thint cap-status" data-i18n="wi.cap.idle">대기 중</div><div class="tctrls" style="margin-top:8px"><button class="tbtn primary cap-shot" data-i18n="wi.cap.shot">'+icHTML('i-camera')+'캡처</button><button class="tbtn cap-rec" data-i18n="wi.cap.rec">'+icHTML('i-video')+'녹화</button></div><div class="tctrls" style="margin-top:5px"><button class="tbtn cap-share" data-i18n="wi.cap.share">'+icHTML('i-share')+'공유용</button><button class="tbtn cap-openfolder" data-i18n="common.folder">'+icHTML('i-folder')+'폴더</button></div><div class="launch-msg cap-msg"></div></div><div class="rh"></div>',
 alarm:'<div class="wl" data-i18n="w.alarm">'+icHTML('i-bell')+'알람</div><div class="alarm-list"></div><div class="launch-row2"><input type="time" class="lk-field alarm-time-in" style="flex:0 0 90px"><input class="lk-field alarm-label-in" data-i18n-placeholder="common.nameOptionalPh" placeholder="이름(선택)"><button class="tbtn primary alarm-addbtn" data-i18n="common.add">'+icHTML('i-plus')+'추가</button></div><div class="launch-msg alarm-msg"></div><div class="rh"></div>',
 
 weather:'<div class="news-hdr"><div class="wl" style="margin-bottom:0" data-i18n="w.weather">'+icHTML('i-cloud')+'날씨</div><div class="news-hdr-btns"><button class="news-srcbtn weather-srcbtn" data-i18n-title="wi.weather.srcTitle" title="지역 설정">'+icHTML('i-gear')+'</button><button class="news-rbtn weather-rbtn" data-i18n="common.refresh">'+icHTML('i-refresh')+'새로고침</button></div></div><div class="news-src-row weather-src-row" style="display:none"><input class="lk-field weather-city-in" data-i18n-placeholder="wi.weather.cityPh" placeholder="도시 이름 (예: 서울, 부산, Tokyo)"><button class="lk-addbtn weather-city-save" data-i18n="common.search">검색</button></div><div class="weather-body"><div class="nst" data-i18n="wi.weather.initial">설정(⚙)에서 도시를 입력해주세요</div></div><div class="rh"></div>',
@@ -3267,6 +3619,8 @@ g2048:'<div class="wl" data-i18n="w.g2048">'+icHTML('i-2048')+'2048<span class="
 minesweeper:'<div class="wl" data-i18n="w.minesweeper">'+icHTML('i-mine')+'지뢰찾기<span class="mine-status"></span></div><div class="wc" style="align-items:center;justify-content:center"><div class="mine-board"></div><div class="thint mine-hint" data-i18n="wi.mine.hint">클릭: 열기 · 우클릭: 깃발</div><button class="tbtn mine-restart" style="margin-top:6px" data-i18n="common.restart">새 게임</button></div><div class="rh"></div>',
 
 tictactoe:'<div class="wl" data-i18n="w.tictactoe">'+icHTML('i-ttt')+'틱택토<span class="ttt-status"></span></div><div class="wc" style="align-items:center;justify-content:center"><div class="ttt-board"></div><button class="tbtn ttt-restart" style="margin-top:8px" data-i18n="common.restart">다시하기</button></div><div class="rh"></div>',
+
+worldclock:'<div class="wl" data-i18n="w.worldclock">'+icHTML('i-worldclock')+'월드클락</div><div class="wclk-list"></div><div class="wclk-add-row"><select class="wclk-sel"></select><button type="button" class="wclk-addbtn" data-i18n-title="common.add" title="추가">'+icHTML('i-plus')+'</button></div><div class="rh"></div>',
 }
 
 // (DEFAULT_SIZE 선언은 스크립트 맨 위로 옮겼음 — 여기 있던 게 TDZ 버그의 원인이었음.
@@ -3339,7 +3693,8 @@ function addWidgetInner(type,left,top,width,height,fixedId,fixedZ,fixedLocked){
     dday:initDday,quote:initQuote,dice:initDice,
     translate:initTranslate,colorpick:initColorpick,chart:initChart,snake:initSnake,sports:initSports,
     clipboard:initClipboard,launcher:initLauncher,screencap:initScreencap,alarm:initAlarm,weather:initWeather,
-    gametimer:initGametimer,g2048:initG2048,minesweeper:initMinesweeper,tictactoe:initTictactoe}
+    gametimer:initGametimer,g2048:initG2048,minesweeper:initMinesweeper,tictactoe:initTictactoe,
+    worldclock:initWorldClock}
   // F[type](d) 안(위젯 초기화 함수)에서 뭔가 터지면, 그 아래 있는
   // closeModal()이 아예 실행이 안 돼서 모달이 화면에 그대로 남아있는데
   // 유저 입장에선 "버튼 눌러도 반응 없음"으로 보일 수 있다. 그래서 위젯
@@ -3540,6 +3895,110 @@ function initMemo(w){
   }
 }
 
+// ── 월드클락: 도시/시간대 목록 ──
+// Intl.DateTimeFormat의 timeZone 옵션만으로 정확하게 계산되므로 별도
+// 라이브러리 없이 구현 가능. ko/en 표기만 따로 들고 있는다.
+const WORLD_TZ_LIST=[
+  {tz:'Asia/Seoul',ko:'서울',en:'Seoul'},
+  {tz:'America/New_York',ko:'뉴욕',en:'New York'},
+  {tz:'America/Los_Angeles',ko:'로스앤젤레스',en:'Los Angeles'},
+  {tz:'America/Chicago',ko:'시카고',en:'Chicago'},
+  {tz:'America/Sao_Paulo',ko:'상파울루',en:'Sao Paulo'},
+  {tz:'Europe/London',ko:'런던',en:'London'},
+  {tz:'Europe/Paris',ko:'파리',en:'Paris'},
+  {tz:'Europe/Berlin',ko:'베를린',en:'Berlin'},
+  {tz:'Europe/Moscow',ko:'모스크바',en:'Moscow'},
+  {tz:'Africa/Cairo',ko:'카이로',en:'Cairo'},
+  {tz:'Asia/Dubai',ko:'두바이',en:'Dubai'},
+  {tz:'Asia/Kolkata',ko:'뉴델리',en:'New Delhi'},
+  {tz:'Asia/Shanghai',ko:'상하이',en:'Shanghai'},
+  {tz:'Asia/Hong_Kong',ko:'홍콩',en:'Hong Kong'},
+  {tz:'Asia/Singapore',ko:'싱가포르',en:'Singapore'},
+  {tz:'Asia/Tokyo',ko:'도쿄',en:'Tokyo'},
+  {tz:'Australia/Sydney',ko:'시드니',en:'Sydney'},
+  {tz:'Pacific/Auckland',ko:'오클랜드',en:'Auckland'},
+  {tz:'UTC',ko:'UTC',en:'UTC'}
+]
+
+function initWorldClock(w){
+  const K='wcw-worldclock-'+w.id
+  const list=w.querySelector('.wclk-list')
+  const sel=w.querySelector('.wclk-sel')
+  const addBtn=w.querySelector('.wclk-addbtn')
+  let items=[]
+  try{
+    const saved=JSON.parse(localStorage.getItem(K)||'null')
+    items=Array.isArray(saved)?saved:[{tz:'America/New_York'},{tz:'Europe/London'}]
+  }catch(e){
+    items=[{tz:'America/New_York'},{tz:'Europe/London'}]
+  }
+  function sv(){try{localStorage.setItem(K,JSON.stringify(items))}catch(e){}}
+  function tzLabel(tz){
+    const found=WORLD_TZ_LIST.find(z=>z.tz===tz)
+    if(found)return currentLang==='en'?found.en:found.ko
+    return tz
+  }
+  function fillSelect(){
+    if(!sel)return
+    const prev=sel.value
+    sel.innerHTML=''
+    WORLD_TZ_LIST.forEach(z=>{
+      const opt=document.createElement('option')
+      opt.value=z.tz;opt.textContent=currentLang==='en'?z.en:z.ko
+      sel.appendChild(opt)
+    })
+    if(prev)sel.value=prev
+  }
+  function render(){
+    if(!list)return
+    list.innerHTML=''
+    if(!items.length){
+      const e=document.createElement('div');e.className='nst';e.textContent=wt('wi.wc.empty')
+      list.appendChild(e);return
+    }
+    const now=new Date()
+    items.forEach((it,i)=>{
+      const row=document.createElement('div');row.className='wclk-item'
+      const info=document.createElement('div');info.className='wclk-info'
+      const nm=document.createElement('div');nm.className='wclk-city';nm.textContent=tzLabel(it.tz)
+      const sub=document.createElement('div');sub.className='wclk-sub'
+      try{
+        const fmt=new Intl.DateTimeFormat(currentLang==='en'?'en-US':'ko-KR',{timeZone:it.tz,hour:'2-digit',minute:'2-digit',hour12:false})
+        const dfmt=new Intl.DateTimeFormat('en-US',{timeZone:it.tz,month:'2-digit',day:'2-digit'})
+        const localDfmt=new Intl.DateTimeFormat('en-US',{month:'2-digit',day:'2-digit'})
+        const timeStr=fmt.format(now)
+        const otherDay=dfmt.format(now)!==localDfmt.format(now)
+        sub.textContent=timeStr+(otherDay?' · '+wt('wi.wc.otherDay'):'')
+      }catch(e){
+        sub.textContent='--:--'
+      }
+      info.appendChild(nm);info.appendChild(sub)
+      const del=document.createElement('button');del.className='wclk-del';del.appendChild(svgIc('i-x'))
+      del.addEventListener('click',e=>{e.stopPropagation();items.splice(i,1);sv();render()})
+      row.appendChild(info);row.appendChild(del)
+      list.appendChild(row)
+    })
+  }
+  fillSelect()
+  if(addBtn){
+    addBtn.addEventListener('mousedown',e=>e.stopPropagation())
+    addBtn.addEventListener('click',e=>{
+      e.stopPropagation()
+      if(!sel||!sel.value)return
+      if(items.some(it=>it.tz===sel.value))return
+      items.push({tz:sel.value})
+      sv();render()
+    })
+  }
+  if(sel)sel.addEventListener('mousedown',e=>e.stopPropagation())
+  const onLangChange=()=>{fillSelect();render()}
+  window.addEventListener('wcw-lang-changed',onLangChange)
+  const prevCleanup=w._cleanup
+  w._cleanup=function(){window.removeEventListener('wcw-lang-changed',onLangChange);if(prevCleanup)prevCleanup()}
+  render()
+  regTimer(w,setInterval(render,30000))
+}
+
 function initHabit(w){
   const K='wcw-habits'
   const list=w.querySelector('.habit-list'),inp=w.querySelector('.hinput'),de=w.querySelector('.hdate')
@@ -3547,6 +4006,18 @@ function initHabit(w){
   let habits=[]
   try{habits=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){habits=[]}
   function sv(){localStorage.setItem(K,JSON.stringify(habits))}
+  function buildHeat(h){
+    const heat=document.createElement('div');heat.className='hheat'
+    const now=new Date()
+    for(let i=6;i>=0;i--){
+      const d=new Date(now);d.setDate(now.getDate()-i)
+      const ds=d.toDateString()
+      const cell=document.createElement('span')
+      cell.className='hheat-cell'+((h.dates&&h.dates.indexOf(ds)>=0)?' on':'')
+      heat.appendChild(cell)
+    }
+    return heat
+  }
   function render(){
     const n=new Date();de.textContent=currentLang==='en'?n.toLocaleDateString('en-US',{month:'long',day:'numeric'}):(n.getMonth()+1)+'월 '+n.getDate()+'일'
     list.innerHTML=''
@@ -3568,7 +4039,7 @@ function initHabit(w){
         sv();render()
       })
       dl.addEventListener('click',e=>{e.stopPropagation();habits.splice(i,1);sv();render()})
-      it.appendChild(ck);it.appendChild(nm);it.appendChild(st);it.appendChild(dl)
+      it.appendChild(ck);it.appendChild(nm);it.appendChild(buildHeat(h));it.appendChild(st);it.appendChild(dl)
       list.appendChild(it)
     })
   }
@@ -4501,6 +4972,7 @@ function initLauncher(w){
 function initScreencap(w){
   const shotBtn=w.querySelector('.cap-shot')
   const recBtn=w.querySelector('.cap-rec')
+  const shareBtn=w.querySelector('.cap-share')
   const folderBtn=w.querySelector('.cap-openfolder')
   const timerEl=w.querySelector('.cap-timer')
   const statusEl=w.querySelector('.cap-status')
@@ -4588,7 +5060,7 @@ function initScreencap(w){
   shotBtn.addEventListener('mousedown',e=>e.stopPropagation())
   shotBtn.addEventListener('click',async e=>{
     e.stopPropagation()
-    if(shotBtn.disabled||recBtn.disabled)return
+    if(shotBtn.disabled||recBtn.disabled||(shareBtn&&shareBtn.disabled))return
     shotBtn.disabled=true
     const restoreText=recording?wt('wi.cap.recording'):wt('wi.cap.idle')
     await runCountdown(wt('wi.cap.countdownShot'))
@@ -4610,9 +5082,46 @@ function initScreencap(w){
     }
   })
 
+  // ── 공유용 캡처(위젯 영역만 + 워터마크) ──
+  if(shareBtn){
+    shareBtn.addEventListener('mousedown',e=>e.stopPropagation())
+    shareBtn.addEventListener('click',async e=>{
+      e.stopPropagation()
+      if(shotBtn.disabled||recBtn.disabled||shareBtn.disabled)return
+      const bbox=computeWidgetsBBox()
+      if(!bbox){
+        showMsg(wt('wi.cap.shareEmpty'),true)
+        return
+      }
+      shareBtn.disabled=true
+      const restoreText=recording?wt('wi.cap.recording'):wt('wi.cap.idle')
+      const badge=showWatermarkBadge(bbox)
+      await runCountdown(wt('wi.cap.countdownShare'))
+      statusEl.textContent=wt('wi.cap.capturing')
+      try{
+        // 워터마크 배지가 실제로 화면에 그려질 시간을 프레임 두 번만큼 더 준다
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))
+        const result=await ipcRenderer.invoke('capture-share-screenshot',bbox.screenAbs)
+        if(result&&result.success){
+          showMsg(wt('wi.cap.saved')+': '+result.filename,false)
+        }else{
+          showMsg((result&&result.error)||wt('wi.cap.shotFail'),true)
+        }
+      }catch(err){
+        console.error('[Wesk] 공유용 캡처 실패:',err)
+        showMsg(wt('wi.cap.shotErr'),true)
+      }finally{
+        if(badge&&badge.parentNode)badge.parentNode.removeChild(badge)
+        statusEl.textContent=restoreText
+        timerEl.textContent=recording?fmtTime(Math.floor((Date.now()-recStartTime)/1000)):'00:00'
+        shareBtn.disabled=false
+      }
+    })
+  }
+
   // ── 화면 녹화 시작 ──
   async function startRecording(){
-    if(recording||shotBtn.disabled)return
+    if(recording||shotBtn.disabled||(shareBtn&&shareBtn.disabled))return
     recBtn.disabled=true
     await runCountdown(wt('wi.cap.countdownRec'))
     try{
@@ -4805,24 +5314,56 @@ function initTimer(w){
 
 function initPomodoro(w){
   const K='wcw-pomo'
+  const LOGK='wcw-pomo-log'
   let phase='work',run=false,sec=25*60,iv=null
   let count=parseInt(localStorage.getItem(K)||'0')
+  let log=[]
+  try{const p=JSON.parse(localStorage.getItem(LOGK)||'[]');log=Array.isArray(p)?p:[]}catch(e){log=[]}
+  function svLog(){try{localStorage.setItem(LOGK,JSON.stringify(log))}catch(e){}}
   const dp=w.querySelector('.tdisp'),ph=w.querySelector('.pomo-phase'),cn=w.querySelector('.pomo-count')
   const st=w.querySelector('.pstart'),rs=w.querySelector('.preset'),sk=w.querySelector('.pskip')
+  const streakEl=w.querySelector('.pomo-streak'),heatEl=w.querySelector('.pomo-heat')
   const D={work:25*60,short:5*60,long:15*60}
   const N={get work(){return wt('wi.pomo.focus')},get short(){return wt('wi.pomo.shortBreak')},get long(){return wt('wi.pomo.longBreak')}}
   function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+  function dayStr(d){return d.toDateString()}
+  function computeStreak(){
+    let streak=0
+    const now=new Date()
+    for(let i=0;;i++){
+      const d=new Date(now);d.setDate(now.getDate()-i)
+      if(log.indexOf(dayStr(d))>=0)streak++
+      else break
+    }
+    return streak
+  }
+  function renderStats(){
+    if(streakEl)streakEl.textContent=wt('wi.pomo.streak',{n:computeStreak()})
+    if(heatEl){
+      heatEl.innerHTML=''
+      const now=new Date()
+      for(let i=6;i>=0;i--){
+        const d=new Date(now);d.setDate(now.getDate()-i)
+        const c=log.filter(x=>x===dayStr(d)).length
+        const cell=document.createElement('span')
+        cell.className='pomo-heat-cell'+(c>0?' on':'')+(c>=4?' hi':'')
+        heatEl.appendChild(cell)
+      }
+    }
+  }
   function upd(){
     dp.textContent=fmt(sec)
     ph.textContent=N[phase]
     ph.style.color=phase==='work'?'var(--ac)':'var(--a2)'
     cn.textContent=wt('wi.pomo.doneCount',{n:count})
+    renderStats()
   }
   const trayId='pomo-'+w.id
   function next(auto){
     clearInterval(iv);run=false;st.textContent=wt('common.start');unregCountdown(trayId)
     if(phase==='work'){
       count++;localStorage.setItem(K,count)
+      log.push(dayStr(new Date()));svLog()
       phase=count%4===0?'long':'short'
     }else phase='work'
     sec=D[phase];upd()

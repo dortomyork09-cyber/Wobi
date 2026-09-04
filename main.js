@@ -442,6 +442,28 @@ function createWindow() {
     }
   })
 
+  // ── 텍스트 입력창에 실제 OS 키보드 포커스 주기 ──
+  // setIgnoreMouseEvents(false)로 클릭 통과를 풀어주는 것만으론 마우스 이벤트
+  // (클릭/드래그)만 이 창으로 들어올 뿐, 키보드 입력이 이 창으로 라우팅되는 데
+  // 필요한 진짜 OS 레벨 포커스는 저절로 따라오지 않는다. 그래서 지금까지
+  // win.focus()를 한 번도 호출한 적이 없었고, 그 결과 "레이아웃 저장" 이름
+  // 입력창처럼 타이핑이 필요한 곳에서 클릭은 되는데 글자가 하나도 안 써지는
+  // 버그가 있었다. 렌더러가 실제로 input/textarea 등을 마우스다운했을 때만
+  // (호버만으론 절대 안 보냄 — 안 그러면 위젯 위로 커서만 스쳐도 다른 프로그램의
+  // 포커스를 뺏어버림) 이 이벤트를 보내므로, 여기서는 받는 즉시 포커스만 주면
+  // 된다. 메인 창/핀 창 둘 다에서 올 수 있어서 이벤트를 보낸 창을 그대로 찾아
+  // focus() 한다.
+  ipcMain.on('focus-window', (e) => {
+    try {
+      const senderWin = BrowserWindow.fromWebContents(e.sender)
+      if (senderWin && !senderWin.isDestroyed() && !senderWin.isFocused()) {
+        senderWin.focus()
+      }
+    } catch (err) {
+      // 포커스 실패해도 치명적이지 않으니 조용히 무시
+    }
+  })
+
   // 화면(index.html) 쪽 자바스크립트 에러도 같은 로그 파일에 남긴다.
   // "버튼을 눌러도 반응이 없다" 류의 문제는 대부분 여기서 잡힌다.
   ipcMain.on('renderer-error', (e, message) => {
@@ -537,6 +559,42 @@ function createWindow() {
     } catch (err) {
       logError('unpin-widget', err)
     }
+  })
+
+  // ── 핀 창 자유 드래그 ──
+  // 예전엔 핀 창을 위젯 헤더(.wl)의 -webkit-app-region:drag로만 움직일 수
+  // 있었는데, 그 좁은 줄만 정확히 잡아야 해서 "고정된 것처럼 안 움직인다"는
+  // 느낌을 줬다. 이제 렌더러가 위젯 어디를 잡든(버튼·입력창처럼 클릭이 필요한
+  // 요소는 렌더러 쪽에서 미리 걸러줌) 드래그 시작 시점의 창 위치를 기준으로
+  // 마우스가 움직인 만큼 setPosition으로 창을 옮긴다.
+  let pinDragOrigin = null // { id, x, y } — 드래그 시작 시점의 창 위치
+
+  ipcMain.on('pinned-drag-start', (e, id) => {
+    try {
+      const pinWin = pinnedWindows[id]
+      if (!pinWin || pinWin.isDestroyed()) return
+      const b = pinWin.getBounds()
+      pinDragOrigin = { id, x: b.x, y: b.y }
+    } catch (err) {
+      logError('pinned-drag-start', err)
+    }
+  })
+
+  ipcMain.on('pinned-drag-move', (e, payload) => {
+    try {
+      if (!payload || !pinDragOrigin || payload.id !== pinDragOrigin.id) return
+      const pinWin = pinnedWindows[payload.id]
+      if (!pinWin || pinWin.isDestroyed()) return
+      const nx = Math.round(pinDragOrigin.x + (Number(payload.dx) || 0))
+      const ny = Math.round(pinDragOrigin.y + (Number(payload.dy) || 0))
+      pinWin.setPosition(nx, ny)
+    } catch (err) {
+      // 드래그 도중의 일시적 오류는 무시 — 다음 mousemove에서 다시 시도됨
+    }
+  })
+
+  ipcMain.on('pinned-drag-end', (e, id) => {
+    if (pinDragOrigin && pinDragOrigin.id === id) pinDragOrigin = null
   })
 
   // 설정의 "초기화"(모든 위젯·데이터 삭제)를 누르면 메인 창은 localStorage를
@@ -1258,6 +1316,72 @@ function createWindow() {
   ipcMain.handle(
     'capture-screenshot',
     async () => captureScreenshotToFile()
+  )
+
+  // ── 공유용 스크린샷(위젯 영역만 잘라서 + 워터마크와 함께) ──
+  // 워터마크는 여기서 그리는 게 아니라, 렌더러가 캡처 직전에 실제 DOM에
+  // 잠깐 띄운 배지를 화면 원본과 함께 그대로 찍는 방식이라(오버레이 창이
+  // 항상 다른 프로그램들 위에 떠있어서 desktopCapturer가 캡처하는 화면
+  // 원본에도 그대로 포함됨), 여기선 화면을 찍고 rect만큼 잘라내기만 하면 된다.
+  ipcMain.handle(
+    'capture-share-screenshot',
+    async (event, rect) => {
+      try {
+        const display = screen.getPrimaryDisplay()
+        const scaleFactor = display.scaleFactor
+        const width = Math.round(display.size.width * scaleFactor)
+        const height = Math.round(display.size.height * scaleFactor)
+
+        const sources = await desktopCapturer.getSources({
+          types: ['screen'],
+          thumbnailSize: { width, height }
+        })
+
+        if (!sources || !sources.length) {
+          return { success: false, error: '화면을 찾을 수 없어요' }
+        }
+
+        let img = sources[0].thumbnail
+        if (!img || img.isEmpty()) {
+          return { success: false, error: '캡처된 이미지가 비어있어요' }
+        }
+
+        // rect가 정상적인 값이면(위젯들이 모여있는 영역) 그 부분만 물리 픽셀
+        // 좌표로 환산해서 잘라낸다. 값이 이상하거나 화면 밖으로 완전히
+        // 벗어나면 크롭을 포기하고 전체 화면 그대로 저장한다(기존 스크린샷
+        // 기능과 같은 동작이라 새로운 실패 케이스가 아님).
+        if (rect && typeof rect.x === 'number' && typeof rect.y === 'number' && rect.width > 0 && rect.height > 0) {
+          let cx = Math.round((rect.x - display.bounds.x) * scaleFactor)
+          let cy = Math.round((rect.y - display.bounds.y) * scaleFactor)
+          let cw = Math.round(rect.width * scaleFactor)
+          let ch = Math.round(rect.height * scaleFactor)
+          if (cx < 0) { cw += cx; cx = 0 }
+          if (cy < 0) { ch += cy; cy = 0 }
+          if (cx + cw > width) cw = width - cx
+          if (cy + ch > height) ch = height - cy
+          if (cw > 0 && ch > 0) {
+            img = img.crop({ x: cx, y: cy, width: cw, height: ch })
+          }
+        }
+
+        const dir = getMediaDir()
+        const filename = `Wesk_공유_${timestampName()}.png`
+        const filePath = path.join(dir, filename)
+
+        fs.writeFileSync(filePath, img.toPNG())
+
+        try {
+          clipboard.writeImage(img)
+        } catch (e) {
+          // 클립보드 복사가 실패해도 파일 저장은 이미 됐으니 무시
+        }
+
+        return { success: true, filename, dir, path: filePath }
+      } catch (err) {
+        logError('capture-share-screenshot', err)
+        return { success: false, error: '공유용 캡처 중 오류가 발생했어요' }
+      }
+    }
   )
 
   ipcMain.handle(
