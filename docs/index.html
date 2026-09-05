@@ -9,7 +9,7 @@
 <meta property="og:site_name" content="Wesk">
 <meta property="og:title" content="Wesk">
 <meta property="og:image" content="icon.png">
-<meta name="description" content="무료 오픈소스 데스크톱 위젯 앱 Wesk. 시계, 할일, 메모, 뉴스, 환율, 주식, 스포츠, 날씨, 화면 캡처/녹화 등 31개 이상의 위젯을 바탕화면에 자유롭게 배치하세요.">
+<meta name="description" content="무료 오픈소스 데스크톱 위젯 앱 Wesk. 시계, 할일, 메모, 뉴스, 환율, 주식, 스포츠, 날씨, 화면 캡처/녹화 등 32개 이상의 위젯을 바탕화면에 자유롭게 배치하세요.">
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"></noscript>
 <style>
@@ -264,7 +264,7 @@ footer .fl{display:flex;justify-content:center;gap:18px;margin-bottom:10px}
     <div class="bento">
       <div class="bcard">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><span id="feat-h-basic">기본</span></h3>
-        <ul><li id="feat-basic-1">시계</li><li id="feat-basic-2">달력</li><li id="feat-basic-3">링크 모음</li></ul>
+        <ul><li id="feat-basic-1">시계</li><li id="feat-basic-2">달력</li><li id="feat-basic-3">링크 모음</li><li id="feat-basic-4">월드클락</li></ul>
       </div>
       <div class="bcard span2">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h13a2 2 0 012 2v12a2 2 0 002 2H5a1 1 0 01-1-1z"/></svg><span id="feat-h-info">정보</span></h3>
@@ -360,7 +360,7 @@ const T={
     'd3-lbl':'카운터','d4-lbl':'주식',
     'wmodal-title':'위젯 추가','wmodal-desc':'클릭하면 바탕화면에 놓여요',
     'features-title':'위젯 목록','features-sub':'이 중에서 쓸 것만 골라 담으면 돼요. 다 켤 필요 없어요.',
-    'feat-h-basic':'기본','feat-basic-1':'시계','feat-basic-2':'달력','feat-basic-3':'링크 모음',
+    'feat-h-basic':'기본','feat-basic-1':'시계','feat-basic-2':'달력','feat-basic-3':'링크 모음','feat-basic-4':'월드클락',
     'feat-h-info':'정보','feat-info-1':'실시간 뉴스 (RSS 커스텀 가능)','feat-info-2':'환율 (5개 통화)',
     'feat-info-3':'주식 — 국내외 종목 한글 검색','feat-info-4':'스포츠 실시간 스코어 (NBA, EPL, MLB 등)','feat-info-5':'날씨',
     'feat-h-log':'기록','feat-log-1':'할일 목록','feat-log-2':'메모 · 습관','feat-log-3':'카운터','feat-log-4':'클립보드 히스토리',
@@ -393,7 +393,7 @@ const T={
     'd3-lbl':'Counter','d4-lbl':'Stocks',
     'wmodal-title':'Add widget','wmodal-desc':'Click one to place it on the desktop',
     'features-title':'Widget list','features-sub':'Pick only what you need — no need to turn them all on.',
-    'feat-h-basic':'Basic','feat-basic-1':'Clock','feat-basic-2':'Calendar','feat-basic-3':'Link collection',
+    'feat-h-basic':'Basic','feat-basic-1':'Clock','feat-basic-2':'Calendar','feat-basic-3':'Link collection','feat-basic-4':'World clock',
     'feat-h-info':'Info','feat-info-1':'Real-time news (custom RSS supported)','feat-info-2':'Exchange rates (5 currencies)',
     'feat-info-3':'Stocks — search Korean & global tickers','feat-info-4':'Live sports scores (NBA, EPL, MLB, etc.)','feat-info-5':'Weather',
     'feat-h-log':'Log','feat-log-1':'To-do list','feat-log-2':'Notes · Habits','feat-log-3':'Counter','feat-log-4':'Clipboard history',
@@ -436,8 +436,8 @@ function applyStaticText(lang){
 
 // 마퀴
 const WIDGETS_I18N={
-  ko:['시계','달력','할일','메모','습관','카운터','뉴스','환율','주식','링크','타이머','뽀모도로','계산기','단위변환','D-day','명언','주사위','번역기','색상피커','그래프','스네이크','스포츠','클립보드','바로가기','게임 타이머','2048','지뢰찾기','틱택토'],
-  en:['Clock','Calendar','To-do','Notes','Habits','Counter','News','Exchange rates','Stocks','Links','Timer','Pomodoro','Calculator','Unit converter','D-day','Quotes','Dice','Translator','Color picker','Graph','Snake','Sports','Clipboard','Shortcuts','Game timer','2048','Minesweeper','Tic-tac-toe']
+  ko:['시계','달력','할일','메모','습관','카운터','뉴스','환율','주식','링크','월드클락','타이머','뽀모도로','계산기','단위변환','D-day','명언','주사위','번역기','색상피커','그래프','스네이크','스포츠','클립보드','바로가기','게임 타이머','2048','지뢰찾기','틱택토'],
+  en:['Clock','Calendar','To-do','Notes','Habits','Counter','News','Exchange rates','Stocks','Links','World clock','Timer','Pomodoro','Calculator','Unit converter','D-day','Quotes','Dice','Translator','Color picker','Graph','Snake','Sports','Clipboard','Shortcuts','Game timer','2048','Minesweeper','Tic-tac-toe']
 }
 function renderMarquee(lang){
   const w=WIDGETS_I18N[lang]
@@ -531,7 +531,7 @@ function wireCard(card){
 }
 document.querySelectorAll('[data-drag]').forEach(wireCard)
 
-// 실제 앱의 "위젯 추가" 모달과 똑같은 구성 — 카테고리별로 31개 위젯을 그대로 보여준다.
+// 실제 앱의 "위젯 추가" 모달과 똑같은 구성 — 카테고리별로 32개 위젯을 그대로 보여준다.
 // 클릭하면 실제 설치하듯이 모달이 닫히고 그 위젯이 바탕화면(데모 박스)에 나타난다.
 // 카테고리 이름/위젯 이름/데모 본문까지 언어별로 따로 갖고 있다가, renderModal()에서
 // 현재 언어에 맞는 텍스트만 뽑아 모달을 다시 그린다.
@@ -540,7 +540,8 @@ const WIDGET_CATS_I18N=[
   {ko:'기본',en:'Basic',items:[
     {id:'clock',ic:WCLOCK,ko:{lbl:'시계',body:'<div class="big" data-live-clock>14:32</div>'},en:{lbl:'Clock',body:'<div class="big" data-live-clock>14:32</div>'}},
     {id:'calendar',ic:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',ko:{lbl:'달력',body:'<div class="big">14</div><div class="small">8월 · 금요일</div>'},en:{lbl:'Calendar',body:'<div class="big">14</div><div class="small">Aug · Friday</div>'}},
-    {id:'links',ic:'<path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 19"/>',ko:{lbl:'링크',body:'<div class="small" style="font-size:12px">자주 쓰는 사이트 모음</div>'},en:{lbl:'Links',body:'<div class="small" style="font-size:12px">Your frequent sites, in one place</div>'}}
+    {id:'links',ic:'<path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 19"/>',ko:{lbl:'링크',body:'<div class="small" style="font-size:12px">자주 쓰는 사이트 모음</div>'},en:{lbl:'Links',body:'<div class="small" style="font-size:12px">Your frequent sites, in one place</div>'}},
+    {id:'worldclock',ic:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><ellipse cx="12" cy="12" rx="9" ry="4" opacity=".55"/>',ko:{lbl:'월드클락',body:'<div class="small" style="font-size:12px">🌍 서울 14:32 · 뉴욕 01:32</div>'},en:{lbl:'World clock',body:'<div class="small" style="font-size:12px">🌍 Seoul 14:32 · NYC 01:32</div>'}}
   ]},
   {ko:'기록',en:'Log',items:[
     {id:'todo',ic:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',ko:{lbl:'할일',body:'<div class="todo-i" data-todo><span class="chk"></span><span>새 할일 추가하기</span></div>'},en:{lbl:'To-do',body:'<div class="todo-i" data-todo><span class="chk"></span><span>Add a new to-do</span></div>'}},
