@@ -464,6 +464,28 @@ function createWindow() {
     }
   })
 
+  // ── 위젯 전체 항상 위에 표시 ──
+  // 위젯 하나씩 "핀"해서 따로 창을 파는 것과 달리, 메인 창(가상 데스크톱 전체를
+  // 덮는 그 투명 오버레이) 자체를 통째로 always-on-top으로 걸어서 지금
+  // 배치된 위젯 전부를 한 번에 다른 프로그램 위로 띄운다. 위젯이 없는 빈
+  // 공간은 여전히 클릭 통과(setIgnoreMouseEvents)라서 다른 프로그램 조작에는
+  // 지장이 없다. 핀 창들과 같은 'screen-saver' 레벨을 써서 전체화면 게임
+  // 위에도 뜨게 한다. Electron 창의 always-on-top 상태는 매번 새로 켤 때
+  // 초기화되므로, 부팅 시 렌더러가 저장해둔 설정값을 다시 보내 맞춰준다.
+  ipcMain.on('set-global-ontop', (e, enabled) => {
+    try {
+      if (win && !win.isDestroyed()) {
+        if (enabled) {
+          win.setAlwaysOnTop(true, 'screen-saver')
+        } else {
+          win.setAlwaysOnTop(false)
+        }
+      }
+    } catch (err) {
+      logError('set-global-ontop', err)
+    }
+  })
+
   // 화면(index.html) 쪽 자바스크립트 에러도 같은 로그 파일에 남긴다.
   // "버튼을 눌러도 반응이 없다" 류의 문제는 대부분 여기서 잡힌다.
   ipcMain.on('renderer-error', (e, message) => {
@@ -473,7 +495,7 @@ function createWindow() {
   // ── 위젯 "항상 위에 표시"(핀) ──
   // index.html 쪽에서 위젯 하나를 핀하면, 그 위젯만 담은 아주 작은 전용 창을
   // 새로 열어서 항상 위 고정을 건다. 같은 index.html 파일을 ?pinned=<id>
-  // 쿼리로 다시 불러오므로, 위젯 종류(31가지)마다 따로 코드를 만들 필요 없이
+  // 쿼리로 다시 불러오므로, 위젯 종류(32가지)마다 따로 코드를 만들 필요 없이
   // 기존 렌더러 로직을 그대로 재사용한다 — 그 창 쪽에서 쿼리를 보고 알아서
   // 위젯 하나만 그린다.
   ipcMain.on('pin-widget', (e, payload) => {
@@ -595,6 +617,44 @@ function createWindow() {
 
   ipcMain.on('pinned-drag-end', (e, id) => {
     if (pinDragOrigin && pinDragOrigin.id === id) pinDragOrigin = null
+  })
+
+  // ── 핀 창 리사이즈 ──
+  // 프레임 없는 투명 창이라 어디가 창 가장자리인지 눈에 안 보여서, 위젯
+  // 자체의 리사이즈 손잡이(.rh)를 그대로 살려두고 그걸 드래그하면 여기로
+  // 델타(dw, dh)가 온다. 위와 같은 방식(시작 시점 bounds 기준으로 델타만큼
+  // 계산)으로 처리하고, 렌더러 쪽 fit()이 창 크기 변화에 맞춰 위젯도 같이
+  // 늘려준다. 창 위치(x, y)는 리사이즈 중엔 그대로 두고 크기만 바꾼다.
+  let pinResizeOrigin = null // { id, x, y, width, height } — 리사이즈 시작 시점의 창 bounds
+
+  ipcMain.on('pinned-resize-start', (e, id) => {
+    try {
+      const pinWin = pinnedWindows[id]
+      if (!pinWin || pinWin.isDestroyed()) return
+      const b = pinWin.getBounds()
+      pinResizeOrigin = { id, x: b.x, y: b.y, width: b.width, height: b.height }
+    } catch (err) {
+      logError('pinned-resize-start', err)
+    }
+  })
+
+  ipcMain.on('pinned-resize-move', (e, payload) => {
+    try {
+      if (!payload || !pinResizeOrigin || payload.id !== pinResizeOrigin.id) return
+      const pinWin = pinnedWindows[payload.id]
+      if (!pinWin || pinWin.isDestroyed()) return
+      const minW = 160 + PIN_MARGIN * 2
+      const minH = 80 + PIN_MARGIN * 2
+      const nw = Math.max(minW, Math.round(pinResizeOrigin.width + (Number(payload.dw) || 0)))
+      const nh = Math.max(minH, Math.round(pinResizeOrigin.height + (Number(payload.dh) || 0)))
+      pinWin.setBounds({ x: pinResizeOrigin.x, y: pinResizeOrigin.y, width: nw, height: nh })
+    } catch (err) {
+      // 리사이즈 도중의 일시적 오류는 무시 — 다음 mousemove에서 다시 시도됨
+    }
+  })
+
+  ipcMain.on('pinned-resize-end', (e, id) => {
+    if (pinResizeOrigin && pinResizeOrigin.id === id) pinResizeOrigin = null
   })
 
   // 설정의 "초기화"(모든 위젯·데이터 삭제)를 누르면 메인 창은 localStorage를
