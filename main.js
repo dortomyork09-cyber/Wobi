@@ -30,6 +30,19 @@ const isPortableBuild = !!process.env.PORTABLE_EXECUTABLE_DIR
 // 해서 이 지연 요인을 없앤다. app이 ready 되기 전에 호출해야 적용된다.
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache')
 
+// ==========================================
+// userData 폴더 위치 고정 (앱 이름이 Wesk → Wobi로 바뀌어도 기존 유저 데이터 유지)
+// ==========================================
+// Electron은 기본적으로 userData 폴더(설정/localStorage/IndexedDB가 실제로
+// 저장되는 곳, %AppData%\<앱이름>)를 productName을 따라 정한다. 이름을
+// "Wobi"로 바꾸면서 이 경로도 같이 %AppData%\Wobi로 바뀌면, 기존에 앱을
+// 쓰던 사람들이 업데이트하는 순간 새 빈 폴더를 보게 되어 위젯 배치·테마·
+// 설정·저장된 레이아웃이 전부 사라진 것처럼 보이는 심각한 문제가 생긴다.
+// 그래서 이름이 앞으로 또 바뀌더라도 실제 데이터 폴더는 예전 위치("Wesk")
+// 그대로 고정해서 이런 사고를 원천적으로 막는다. app이 ready 되기 전, 그리고
+// 다른 코드가 app.getPath('userData')를 부르기 전에 반드시 먼저 호출해야 한다.
+app.setPath('userData', path.join(app.getPath('appData'), 'Wesk'))
+
 let win = null
 // "항상 위에 표시"로 핀한 위젯마다 따로 뜨는 아주 작은 전용 창들.
 // 위젯 id → 그 위젯만 담은 BrowserWindow.
@@ -97,7 +110,7 @@ function logError(context, err) {
   // 패키징된(설치된) 앱에서는 __dirname이 asar 내부라 쓰기가 실패하는데,
   // 그래도 try/catch로 감쌌으니 조용히 무시되고 앱 동작엔 영향 없다.
   try {
-    const debugPath = path.join(__dirname, 'wesk-debug.log')
+    const debugPath = path.join(__dirname, 'wobi-debug.log')
     const time2 = localTimeString()
     const message2 = err && err.stack ? err.stack : String(err)
     fs.appendFileSync(debugPath, `[${time2}] [${context}] ${message2}\n`)
@@ -110,7 +123,7 @@ function logError(context, err) {
 // 안에서만 쓰고, 위 logError와 마찬가지로 __dirname(C:\WCW) 밑에 남긴다.
 function debugLog(msg) {
   try {
-    const debugPath = path.join(__dirname, 'wesk-debug.log')
+    const debugPath = path.join(__dirname, 'wobi-debug.log')
     fs.appendFileSync(debugPath, `[${localTimeString()}] [debug] ${msg}\n`)
   } catch (e) {}
 }
@@ -177,7 +190,7 @@ function notifyIfJustUpdated() {
       try {
         if (Notification.isSupported()) {
           new Notification({
-            title: 'Wesk 업데이트 완료',
+            title: 'Wobi 업데이트 완료',
             body: `v${lastVersion} -> v${currentVersion}(으)로 업데이트됐어요.`,
             icon: path.join(__dirname, 'icon.png')
           }).show()
@@ -197,13 +210,13 @@ function checkForUpdate() {
   try {
     const options = {
       headers: {
-        'User-Agent': 'Wesk-App'
+        'User-Agent': 'Wobi-App'
       },
       timeout: 8000
     }
 
     const req = https.get(
-      'https://api.github.com/repos/dortomyork09-cyber/Wesk/releases/latest',
+      'https://api.github.com/repos/dortomyork09-cyber/Wobi/releases/latest',
       options,
       res => {
         let data = ''
@@ -226,12 +239,12 @@ function checkForUpdate() {
             if (isNewerVersion(latestVersion, currentVersion)) {
               const releaseUrl =
                 json.html_url ||
-                'https://github.com/dortomyork09-cyber/Wesk/releases/latest'
+                'https://github.com/dortomyork09-cyber/Wobi/releases/latest'
 
               dialog
                 .showMessageBox({
                   type: 'info',
-                  title: 'Wesk 업데이트 알림',
+                  title: 'Wobi 업데이트 알림',
                   message: `새 버전(${latestVersion})이 나왔어요.\n지금 버전은 ${currentVersion}입니다.`,
                   buttons: ['다운로드 페이지 열기', '나중에'],
                   defaultId: 0,
@@ -285,7 +298,7 @@ function setupAutoUpdaterListeners() {
       try {
         if (Notification.isSupported()) {
           new Notification({
-            title: 'Wesk 업데이트 준비됨',
+            title: 'Wobi 업데이트 준비됨',
             body: `v${info.version} 다운로드를 마쳤어요. 앱을 재시작하면 적용돼요.`,
             icon: path.join(__dirname, 'icon.png')
           }).show()
@@ -306,7 +319,7 @@ function setupAutoUpdaterListeners() {
 }
 
 // 실제로 새 버전이 있는지 확인을 실행한다. 앱을 켤 때 한 번, 그리고 켜놓은
-// 동안에도 몇 시간마다 한 번씩 이 함수를 불러준다 — Wesk는 트레이 아이콘도
+// 동안에도 몇 시간마다 한 번씩 이 함수를 불러준다 — Wobi는 트레이 아이콘도
 // 없이 며칠씩 계속 켜놓고 쓰는 앱이라, 시작할 때 딱 한 번만 확인하면 그 뒤에
 // 나온 새 버전은 앱을 완전히 껐다 다시 켜기 전까진 영영 확인이 안 될 수 있음.
 function checkForUpdateNow() {
@@ -1314,7 +1327,7 @@ function createWindow() {
   // 메인 프로세스에서 하는 게 안전하고 일관적이라서).
 
   function getMediaDir() {
-    const dir = path.join(app.getPath('pictures'), 'Wesk')
+    const dir = path.join(app.getPath('pictures'), 'Wobi')
 
     try {
       if (!fs.existsSync(dir)) {
@@ -1355,7 +1368,7 @@ function createWindow() {
       }
 
       const dir = getMediaDir()
-      const filename = `Wesk_캡처_${timestampName()}.png`
+      const filename = `Wobi_캡처_${timestampName()}.png`
       const filePath = path.join(dir, filename)
 
       fs.writeFileSync(filePath, img.toPNG())
@@ -1425,7 +1438,7 @@ function createWindow() {
         }
 
         const dir = getMediaDir()
-        const filename = `Wesk_공유_${timestampName()}.png`
+        const filename = `Wobi_공유_${timestampName()}.png`
         const filePath = path.join(dir, filename)
 
         fs.writeFileSync(filePath, img.toPNG())
@@ -1480,7 +1493,7 @@ function createWindow() {
         }
 
         const dir = getMediaDir()
-        const filename = `Wesk_녹화_${timestampName()}.webm`
+        const filename = `Wobi_녹화_${timestampName()}.webm`
         const filePath = path.join(dir, filename)
 
         fs.writeFileSync(filePath, buffer)
@@ -1546,9 +1559,9 @@ function createWindow() {
           '.json'
         const win = BrowserWindow.getAllWindows()[0]
         const result = await dialog.showSaveDialog(win, {
-          title: 'Wesk 백업 저장',
+          title: 'Wobi 백업 저장',
           defaultPath: defaultName,
-          filters: [{ name: 'Wesk 백업 파일', extensions: ['json'] }]
+          filters: [{ name: 'Wobi 백업 파일', extensions: ['json'] }]
         })
         if (result.canceled || !result.filePath) {
           return { success: false, canceled: true }
@@ -1568,9 +1581,9 @@ function createWindow() {
       try {
         const win = BrowserWindow.getAllWindows()[0]
         const result = await dialog.showOpenDialog(win, {
-          title: 'Wesk 백업 불러오기',
+          title: 'Wobi 백업 불러오기',
           properties: ['openFile'],
-          filters: [{ name: 'Wesk 백업 파일', extensions: ['json'] }]
+          filters: [{ name: 'Wobi 백업 파일', extensions: ['json'] }]
         })
         if (result.canceled || !result.filePaths || !result.filePaths[0]) {
           return { success: false, canceled: true }

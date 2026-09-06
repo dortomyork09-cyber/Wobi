@@ -1,9 +1,9 @@
 {
   "name": "wcw",
   "version": "1.5.0",
-  "description": "Wesk - 바탕화면 위젯",
+  "description": "Wobi - 바탕화면 위젯",
   "main": "main.js",
-  "author": "Wesk",
+  "author": "Wobi",
   "license": "SEE LICENSE IN LICENSE.md",
   "scripts": {
     "start": "electron .",
@@ -12,8 +12,8 @@
     "build:all": "electron-builder --win portable nsis --publish never"
   },
   "build": {
-    "appId": "com.wesk.widget",
-    "productName": "Wesk",
+    "appId": "com.wobi.widget",
+    "productName": "Wobi",
     "icon": "icon.png",
     "artifactName": "${productName}-${version}.${ext}",
     "win": {
@@ -28,12 +28,12 @@
       "displayLanguageSelector": true,
       "installerLanguages": ["en_US", "ko_KR"],
       "language": "1042",
-      "artifactName": "Wesk-Setup.${ext}"
+      "artifactName": "Wobi-Setup.${ext}"
     },
     "publish": {
       "provider": "github",
       "owner": "dortomyork09-cyber",
-      "repo": "Wesk"
+      "repo": "Wobi"
     },
     "files": [
       "**/*",

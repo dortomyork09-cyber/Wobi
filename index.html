@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Wesk</title>
+<title>Wobi</title>
 <!-- 구글 폰트(Inter/JetBrains Mono)를 <style> 안 @import로 걸어두면 이 스타일시트를
      네트워크로 다 받아올 때까지 화면이 아예 안 그려진다(렌더링 차단) — 특히 인터넷이
      느리거나 방화벽/백신이 첫 요청을 붙잡는 PC에서는 창이 뜨는 데만 몇 초씩 걸려서
@@ -948,7 +948,7 @@ body.theme-light .bp-card,body.theme-ice .bp-card{background:#ffffff80}
 <div class="topbar">
   <div class="brand">
     <div class="brand-mk"><svg class="ic"><use href="#i-w"/></svg></div>
-    <span class="brand-tx">Wesk</span>
+    <span class="brand-tx">Wobi</span>
   </div>
   <div class="topbar-r">
     <button class="btn" id="theme-toggle-btn" onclick="toggleThemePanel()"><svg class="ic"><use href="#i-palette"/></svg><span data-i18n="top.theme">테마</span></button>
@@ -1438,7 +1438,7 @@ function maybeSendDdayNudge(){
   if(lastDate===today)return // 오늘 이미 알렸으면 또 안 알림
   const d=getNearestDday()
   if(!d||d.diff!==0)return
-  notify('Wesk · '+wt('nudge.ddayTitle'),wt('nudge.ddayBody',{name:d.name}))
+  notify('Wobi · '+wt('nudge.ddayTitle'),wt('nudge.ddayBody',{name:d.name}))
   localStorage.setItem('wcw-nudge-dday-date',today)
 }
 function maybeSendTodoNudge(){
@@ -1447,7 +1447,7 @@ function maybeSendTodoNudge(){
   if(n<=0)return
   const last=Number(localStorage.getItem('wcw-nudge-todo-at')||0)
   if(Date.now()-last<NUDGE_INTERVAL_MS)return
-  notify('Wesk',wt('nudge.todoBody',{n}))
+  notify('Wobi',wt('nudge.todoBody',{n}))
   localStorage.setItem('wcw-nudge-todo-at',String(Date.now()))
 }
 function runNudgeCheck(){
@@ -1501,7 +1501,7 @@ const I18N={
     'set.backup.l':'백업','set.backup.s':'모든 위젯과 설정을 파일로 저장',
     'set.restore.l':'복원','set.restore.s':'백업 파일에서 불러오기',
     'confirm.restore':'지금 위젯과 설정이 백업 파일 내용으로 전부 바뀌어요. 계속할까요?',
-    'restore.badFile':'올바른 Wesk 백업 파일이 아니에요',
+    'restore.badFile':'올바른 Wobi 백업 파일이 아니에요',
     'restore.done':'복원했어요. 다시 불러올게요.',
     'backup.done':'백업 파일을 저장했어요.',
     'set.onboardPreview.l':'첫 실행 안내 다시보기','set.onboardPreview.s':'단계별 사용법 안내를 처음부터 다시 봐요',
@@ -1510,7 +1510,7 @@ const I18N={
     'modal.title':'위젯 추가','modal.desc':'클릭하면 바탕화면에 놓입니다','modal.search':'위젯 이름으로 검색',
     'cat.basic':'기본','cat.record':'기록','cat.info':'정보','cat.tools':'도구','cat.fun':'재미',
     'tour.skip':'건너뛰기','tour.prev':'이전','tour.next':'다음','tour.done':'시작하기','tour.step':'{n} / {total}',
-    'tour.1.title':'Wesk에 오신 걸 환영해요!','tour.1.desc':'바탕화면 위에 원하는 위젯을 자유롭게 올려두고 쓰는 앱이에요. 시계·할일부터 게임까지 32가지가 넘는 위젯 중에서 골라 담으면 돼요. 1분이면 끝나니 가볍게 훑어보세요.',
+    'tour.1.title':'Wobi에 오신 걸 환영해요!','tour.1.desc':'바탕화면 위에 원하는 위젯을 자유롭게 올려두고 쓰는 앱이에요. 시계·할일부터 게임까지 32가지가 넘는 위젯 중에서 골라 담으면 돼요. 1분이면 끝나니 가볍게 훑어보세요.',
     'tour.2.title':'위젯 추가','tour.2.desc':'여기를 누르면 시계·할일·메모 같은 위젯들을 바탕화면에 추가할 수 있어요. <b>32개가 넘는 위젯</b> 중에 원하는 걸 골라보세요. 위쪽 검색창에 이름을 쳐서 바로 찾을 수도 있어요.',
     'tour.3.title':'자유롭게 배치하기','tour.3.desc':'위젯은 마우스로 <b>드래그</b>해서 원하는 곳에 두고, 모서리를 잡아 <b>크기</b>도 자유롭게 조절할 수 있어요. 다른 위젯 가까이 가져가면 자석처럼 살짝 달라붙는 스냅도 켜져 있어요.',
     'tour.4.title':'우클릭으로 꾸미기','tour.4.desc':'위젯을 <b>우클릭</b>하면 색상·투명도·배경 이미지·잠금·삭제 메뉴가 떠요. 위젯마다 따로 꾸며서 나만의 느낌을 내보세요.',
@@ -1673,7 +1673,7 @@ const I18N={
     'set.backup.l':'Backup','set.backup.s':'Save all widgets and settings to a file',
     'set.restore.l':'Restore','set.restore.s':'Load from a backup file',
     'confirm.restore':'This will replace all current widgets and settings with the backup file. Continue?',
-    'restore.badFile':'This is not a valid Wesk backup file',
+    'restore.badFile':'This is not a valid Wobi backup file',
     'restore.done':'Restored. Reloading now.',
     'backup.done':'Backup file saved.',
     'set.onboardPreview.l':'Replay first-run tour','set.onboardPreview.s':'Replay the step-by-step walkthrough from the start',
@@ -1682,7 +1682,7 @@ const I18N={
     'modal.title':'Add Widget','modal.desc':'Click to place it on your desktop','modal.search':'Search widgets',
     'cat.basic':'Basic','cat.record':'Records','cat.info':'Info','cat.tools':'Tools','cat.fun':'Fun',
     'tour.skip':'Skip','tour.prev':'Back','tour.next':'Next','tour.done':'Get started','tour.step':'{n} / {total}',
-    'tour.1.title':'Welcome to Wesk!','tour.1.desc':'Pin any widgets you like right on your desktop — from a clock and to-do list to games, there are 32+ to choose from. This walkthrough takes about a minute.',
+    'tour.1.title':'Welcome to Wobi!','tour.1.desc':'Pin any widgets you like right on your desktop — from a clock and to-do list to games, there are 32+ to choose from. This walkthrough takes about a minute.',
     'tour.2.title':'Add a widget','tour.2.desc':'Click here to add widgets like a clock, to-do list, or notes to your desktop. Pick from <b>32+ widgets</b>, or search by name at the top.',
     'tour.3.title':'Arrange freely','tour.3.desc':'<b>Drag</b> any widget wherever you like, and grab a corner to <b>resize</b> it. Widgets snap together slightly when you drag one near another.',
     'tour.4.title':'Right-click to customize','tour.4.desc':'Right-click a widget for color, opacity, background image, lock, and delete options — customize each one separately.',
@@ -1931,7 +1931,7 @@ function sm(v){
   }
 }
 function rm(el){if(!el)return;el.addEventListener('mouseenter',()=>sm(false));el.addEventListener('mouseleave',()=>sm(true))}
-const INTERACTIVE_SEL='.topbar,#modal.show,#ctx-menu.show,#cpick.show,#wopac.show,#theme-panel.show,#settings-panel.show,.widget,#tourCard.show,#textPromptModal.show'
+const INTERACTIVE_SEL='.topbar,#modal.show,#ctx-menu.show,#cpick.show,#wopac.show,#theme-panel.show,#settings-panel.show,.widget,#tourCard.show,#textPromptModal.show,#widgetIntroModal.show'
 function isInteractivePoint(x,y){
   try{
     const el=document.elementFromPoint(x,y)
@@ -1966,7 +1966,7 @@ if(!PINNED_ID){
   },{passive:true})
   // .topbar 자체는 pointer-events:none이라 더 이상 이 mouseenter/leave가 안 뜨니
   // 실제로 클릭 가능한 .topbar-r(버튼들)에 붙인다.
-  document.querySelectorAll('.topbar-r,#modal,#ctx-menu,#cpick,#wopac,#theme-panel,#settings-panel,#tourCard').forEach(rm)
+  document.querySelectorAll('.topbar-r,#modal,#ctx-menu,#cpick,#wopac,#theme-panel,#settings-panel,#tourCard,#widgetIntroModal').forEach(rm)
 }
 
 // ── 텍스트 입력창 클릭 시 실제 OS 키보드 포커스 확보 ──
@@ -2570,7 +2570,7 @@ function collectBackupData(){
       if(k&&k.indexOf('wcw')===0)data[k]=localStorage.getItem(k)
     }
   }catch(e){}
-  return {app:'Wesk',version:1,exportedAt:new Date().toISOString(),data}
+  return {app:'Wobi',version:1,exportedAt:new Date().toISOString(),data}
 }
 
 const backupExportBtn=document.getElementById('backup-export-btn')
@@ -2584,7 +2584,7 @@ if(backupExportBtn){
       if(res&&res.success)alert(t('backup.done'))
       else if(res&&!res.canceled)alert(res.error||t('backup.done'))
     }catch(err){
-      console.error('[Wesk] 백업 내보내기 실패:',err)
+      console.error('[Wobi] 백업 내보내기 실패:',err)
     }
   })
 }
@@ -2600,10 +2600,10 @@ if(backupImportBtn){
       if(!res.success){alert(res.error||t('restore.badFile'));return}
       let parsed=null
       try{parsed=JSON.parse(res.content)}catch(err){parsed=null}
-      // 형식 검증: WCW/Wesk 백업 파일인지(리브랜딩 전 백업도 그대로 불러와지도록
+      // 형식 검증: WCW/Wobi 백업 파일인지(리브랜딩 전 백업도 그대로 불러와지도록
       // 옛 식별자 'WCW'도 같이 인정), data가 객체인지, 안의 키들이 전부
       // 'wcw'로 시작하는지 확인해서 엉뚱한 json 파일을 잘못 불러오지 않게 한다.
-      const validShape=parsed&&(parsed.app==='Wesk'||parsed.app==='WCW')&&parsed.data&&typeof parsed.data==='object'&&!Array.isArray(parsed.data)
+      const validShape=parsed&&(parsed.app==='Wobi'||parsed.app==='WCW')&&parsed.data&&typeof parsed.data==='object'&&!Array.isArray(parsed.data)
       const keys=validShape?Object.keys(parsed.data):[]
       const validKeys=validShape&&keys.length>0&&keys.every(k=>k.indexOf('wcw')===0)
       if(!validShape||!validKeys){alert(t('restore.badFile'));return}
@@ -2628,7 +2628,7 @@ if(backupImportBtn){
       alert(t('restore.done'))
       location.reload()
     }catch(err){
-      console.error('[Wesk] 백업 가져오기 실패:',err)
+      console.error('[Wobi] 백업 가져오기 실패:',err)
     }
   })
 }
@@ -3323,7 +3323,7 @@ function clearWidgetBg(){
             applyWidgetBg(w,resized)
           })
         }catch(err){
-          console.error('[Wesk] 배경 이미지 처리 실패:',err)
+          console.error('[Wobi] 배경 이미지 처리 실패:',err)
           alert(wt('wi.bg.fail'))
         }
       }
@@ -3738,7 +3738,7 @@ function showWatermarkBadge(bbox){
   try{
     const badge=document.createElement('div')
     badge.className='share-watermark'
-    badge.innerHTML='<span class="share-wm-brand">Wesk</span><span class="share-wm-tag">@wcw_widget</span>'
+    badge.innerHTML='<span class="share-wm-brand">Wobi</span><span class="share-wm-tag">@wcw_widget</span>'
     const bw=150
     badge.style.left=Math.max(bbox.local.x+8,bbox.local.x+bbox.local.width-bw)+'px'
     badge.style.top=(bbox.local.y+bbox.local.height-34)+'px'
@@ -4548,7 +4548,7 @@ function initExchange(w){
       const u=w.querySelector('.rup')
       if(u)u.textContent=wt('wi.common.updated')+new Date().toLocaleTimeString(currentLang==='en'?'en-US':'ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
     }catch(e){
-      console.error('[Wesk] 환율 위젯 갱신 실패:',e)
+      console.error('[Wobi] 환율 위젯 갱신 실패:',e)
       w.querySelectorAll('.rv').forEach(el=>{el.textContent=wt('wi.common.connFail')})
     }
   }
@@ -4760,7 +4760,7 @@ function initStock(w){
           }))
         }
       }catch(e){
-        console.error('[Wesk] 주식 검색(Yahoo) 실패:',e)
+        console.error('[Wobi] 주식 검색(Yahoo) 실패:',e)
       }
 
       if(mySeq!==searchSeq)return // 그 사이 검색어가 바뀌었으면 이 결과는 버린다
@@ -4851,7 +4851,7 @@ function initStock(w){
         if(pe)pe.textContent=fmtQuotePrice(q)
         if(ce){ce.textContent=fmtQuoteChange(q);ce.className='sc '+(q.change>0?'cup':q.change<0?'cdn':'')}
       }catch(e){
-        console.error('[Wesk] 주식 시세 갱신 실패('+x.s+'):',e)
+        console.error('[Wobi] 주식 시세 갱신 실패('+x.s+'):',e)
       }
     }
     const u=w.querySelector('.sup')
@@ -4980,7 +4980,7 @@ function initClipboard(w){
           }
           row.classList.add('copied')
           setTimeout(()=>row.classList.remove('copied'),450)
-        }catch(err){console.error('[Wesk] 클립보드 복사 실패:',err)}
+        }catch(err){console.error('[Wobi] 클립보드 복사 실패:',err)}
       })
       del.addEventListener('click',e=>{
         e.stopPropagation();items.splice(i,1);sv();render()
@@ -5020,7 +5020,7 @@ function initClipboard(w){
         items.unshift({type:'image',data:thumb})
         capItemCounts()
         sv();render()
-      }catch(err){console.error('[Wesk] 클립보드 이미지 처리 실패:',err)}
+      }catch(err){console.error('[Wobi] 클립보드 이미지 처리 실패:',err)}
     }
     img.onerror=()=>{}
     img.src=dataUrl
@@ -5123,7 +5123,7 @@ function initLauncher(w){
           const err=await shell.openPath(it.path)
           if(err)showMsg(wt('wi.launcher.runFail')+': '+err,true)
         }catch(ex){
-          console.error('[Wesk] 바로가기 실행 실패:',ex)
+          console.error('[Wobi] 바로가기 실행 실패:',ex)
           showMsg(wt('wi.launcher.runErr'),true)
         }
       })
@@ -5170,7 +5170,7 @@ function initLauncher(w){
           showMsg(wt('wi.launcher.readPathFail'),true)
         }
       }catch(err){
-        console.error('[Wesk] 드래그 앤 드롭 처리 실패:',err)
+        console.error('[Wobi] 드래그 앤 드롭 처리 실패:',err)
         showMsg(wt('wi.launcher.readInfoFail'),true)
       }
     })
@@ -5283,7 +5283,7 @@ function initScreencap(w){
         showMsg((result&&result.error)||wt('wi.cap.shotFail'),true)
       }
     }catch(err){
-      console.error('[Wesk] 스크린샷 캡처 실패:',err)
+      console.error('[Wobi] 스크린샷 캡처 실패:',err)
       showMsg(wt('wi.cap.shotErr'),true)
     }finally{
       statusEl.textContent=restoreText
@@ -5318,7 +5318,7 @@ function initScreencap(w){
           showMsg((result&&result.error)||wt('wi.cap.shotFail'),true)
         }
       }catch(err){
-        console.error('[Wesk] 공유용 캡처 실패:',err)
+        console.error('[Wobi] 공유용 캡처 실패:',err)
         showMsg(wt('wi.cap.shotErr'),true)
       }finally{
         if(badge&&badge.parentNode)badge.parentNode.removeChild(badge)
@@ -5355,7 +5355,7 @@ function initScreencap(w){
       }
 
       mediaRecorder.onerror=ev=>{
-        console.error('[Wesk] 녹화 중 오류:',ev.error)
+        console.error('[Wobi] 녹화 중 오류:',ev.error)
         showMsg(wt('wi.cap.recErr'),true)
       }
 
@@ -5379,7 +5379,7 @@ function initScreencap(w){
             showMsg((result&&result.error)||wt('wi.cap.recSaveFail'),true)
           }
         }catch(err){
-          console.error('[Wesk] 녹화 저장 실패:',err)
+          console.error('[Wobi] 녹화 저장 실패:',err)
           showMsg(wt('wi.cap.saveErr'),true)
         }finally{
           statusEl.textContent=wt('wi.cap.idle')
@@ -5398,7 +5398,7 @@ function initScreencap(w){
         timerEl.textContent=fmtTime(elapsed)
       },1000))
     }catch(err){
-      console.error('[Wesk] 녹화 시작 실패:',err)
+      console.error('[Wobi] 녹화 시작 실패:',err)
       showMsg(wt('wi.cap.startFail'),true)
       recording=false
       if(recStream){
@@ -5424,7 +5424,7 @@ function initScreencap(w){
       try{
         mediaRecorder.stop()
       }catch(err){
-        console.error('[Wesk] 녹화 중지 실패:',err)
+        console.error('[Wobi] 녹화 중지 실패:',err)
         statusEl.textContent=wt('wi.cap.idle')
         if(recStream){
           recStream.getTracks().forEach(t=>{try{t.stop()}catch(e){}})
@@ -5453,7 +5453,7 @@ function initScreencap(w){
     try{
       await ipcRenderer.invoke('open-capture-folder')
     }catch(err){
-      console.error('[Wesk] 폴더 열기 실패:',err)
+      console.error('[Wobi] 폴더 열기 실패:',err)
       showMsg(wt('wi.cap.folderFail'),true)
     }
   })
@@ -6869,7 +6869,7 @@ function initWeather(w){
       updEl.textContent=wt('wi.common.updated')+new Date().toLocaleTimeString(currentLang==='en'?'en-US':'ko-KR',{hour:'2-digit',minute:'2-digit'})
       body.appendChild(updEl)
     }catch(err){
-      console.error('[Wesk] 날씨 갱신 실패:',err)
+      console.error('[Wobi] 날씨 갱신 실패:',err)
       showEmpty(wt('wi.weather.fetchFail'))
     }
     loading=false
@@ -6893,7 +6893,7 @@ function initWeather(w){
       if(srcRow)srcRow.style.display='none'
       load()
     }catch(err){
-      console.error('[Wesk] 날씨 도시 검색 실패:',err)
+      console.error('[Wobi] 날씨 도시 검색 실패:',err)
       showEmpty(wt('wi.weather.cityNotFound'))
     }finally{
       if(citySaveBtn){citySaveBtn.disabled=false;citySaveBtn.textContent=wt('common.search')}
