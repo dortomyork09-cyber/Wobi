@@ -42,16 +42,19 @@ try {
     $playback = $session.GetPlaybackInfo()
     $timeline = $session.GetTimelineProperties()
 
+    # 제목/아티스트가 비어있는 경우의 안내 문구는 언어별로 달라야 해서 여기서
+    # 하드코딩하지 않고 빈 문자열로 두고, 렌더러(index.html) 쪽에서 앱 언어에
+    # 맞는 i18n 문구로 채운다.
     $title = if ($info.Title) {
         [string]$info.Title
     } else {
-        "재생 없음"
+        ""
     }
 
     $artist = if ($info.Artist) {
         [string]$info.Artist
     } else {
-        "음악을 틀어보세요"
+        ""
     }
 
     $status = $playback.PlaybackStatus.ToString()

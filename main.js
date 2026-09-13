@@ -2,6 +2,7 @@ const { app, BrowserWindow, screen, ipcMain, dialog, shell, desktopCapturer, cli
 const path = require('path')
 const https = require('https')
 const fs = require('fs')
+const { execFile } = require('child_process')
 
 // electron-updater는 NSIS 설치형 빌드에서만 의미가 있고(포터블 exe는 원리상
 // 자기 자신을 자동으로 갈아끼울 수 없음), package.json에 새로 추가한
@@ -1596,6 +1597,72 @@ function createWindow() {
       }
     }
   )
+
+  // ==========================================
+  // 미디어 컨트롤 (재생 중인 곡 조회 + 재생/일시정지/스킵 + 시스템 볼륨)
+  // ==========================================
+  // 지금 재생 중인 곡 정보나 시스템 볼륨은 Node/Electron API만으로는 접근할
+  // 방법이 없고, Windows의 미디어 세션/오디오 API(WinRT)를 거쳐야 하는데 이건
+  // PowerShell에서만 비교적 쉽게 쓸 수 있다. 그래서 media.ps1/control.ps1/
+  // volume.ps1을 자식 프로세스로 띄워서 대신 시켜본다. -File 경로는 패키징된
+  // 빌드에서도 앱 설치 폴더 기준(__dirname)으로 찾아야 하고(pkg 안이 아니라
+  // 실제 파일이라 문제없음 — package.json build.files에 "**/*"로 포함됨),
+  // 프로세스가 안 끝나고 멈춰버리는 경우를 대비해 timeout을 걸어둔다.
+  function runPowerShellScript(scriptName, args) {
+    return new Promise(resolve => {
+      const scriptPath = path.join(__dirname, scriptName)
+      execFile(
+        'powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args],
+        { timeout: 6000, windowsHide: true },
+        (err, stdout) => {
+          if (err) {
+            resolve(null)
+            return
+          }
+          resolve(stdout)
+        }
+      )
+    })
+  }
+
+  ipcMain.handle('media-now-playing', async () => {
+    try {
+      const outDir = path.join(app.getPath('userData'), 'media-thumb')
+      const raw = await runPowerShellScript('media.ps1', ['-outDir', outDir])
+      if (!raw) return null
+      return JSON.parse(raw)
+    } catch (err) {
+      logError('media-now-playing', err)
+      return null
+    }
+  })
+
+  ipcMain.handle('media-control', async (event, action) => {
+    try {
+      if (!['play-pause', 'next', 'prev'].includes(action)) return false
+      await runPowerShellScript('control.ps1', ['-action', action])
+      return true
+    } catch (err) {
+      logError('media-control', err)
+      return false
+    }
+  })
+
+  // level을 안 주면(undefined) 현재 볼륨만 조회, 주면 그 값으로 설정.
+  ipcMain.handle('media-volume', async (event, level) => {
+    try {
+      const args = (typeof level === 'number' && isFinite(level))
+        ? ['-level', String(Math.max(0, Math.min(100, Math.round(level))))]
+        : []
+      const raw = await runPowerShellScript('volume.ps1', args)
+      const n = parseInt(raw, 10)
+      return isFinite(n) ? n : 0
+    } catch (err) {
+      logError('media-volume', err)
+      return 0
+    }
+  })
 
 }
 

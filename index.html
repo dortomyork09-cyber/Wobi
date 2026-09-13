@@ -460,6 +460,21 @@ body.lang-en .kr-only{display:none}
 .gt-disp{font-size:26px}
 .gt-break{margin-top:8px}
 
+/* ══ 미디어 ══ */
+.media-wc{align-items:center;justify-content:center;gap:0}
+.media-art{width:76px;height:76px;border-radius:10px;object-fit:cover;box-shadow:0 3px 10px #0004;margin-bottom:9px;flex-shrink:0}
+.media-nodata{text-align:center}
+.media-info{width:100%;text-align:center;margin-bottom:6px}
+.media-title{font-size:12.5px;font-weight:600;color:var(--wc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-artist{font-size:10.5px;color:var(--sc);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-progress{width:100%;height:3px;border-radius:2px;background:var(--ib);overflow:hidden;margin-bottom:4px;flex-shrink:0}
+.media-progress-fill{height:100%;width:0%;background:var(--c3);border-radius:2px;transition:width .2s linear}
+.media-time{width:100%;display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);color:var(--lc);margin-bottom:8px}
+.media-ctrls{flex-shrink:0}
+.media-vol-row{width:100%;display:flex;align-items:center;gap:7px;margin-top:9px}
+.media-vol-row .ic{width:13px;height:13px;color:var(--lc);flex-shrink:0}
+.media-vol-slider{flex:1;width:auto}
+
 /* ══ 2048 ══ */
 .g2048-score{font-size:10.5px;color:var(--sc);font-weight:500;opacity:.75}
 .g2048-board{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:6px;width:100%;aspect-ratio:1;background:var(--ib);border:1px solid var(--ibr);border-radius:9px;padding:6px;box-sizing:border-box}
@@ -945,6 +960,11 @@ body.theme-light .bp-card,body.theme-ice .bp-card{background:#ffffff80}
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
 <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"/></symbol>
+<symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></symbol>
+<symbol id="i-prev" viewBox="0 0 24 24"><path d="M19 5v14L8 12z"/><rect x="4" y="5" width="2" height="14" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-next" viewBox="0 0 24 24"><path d="M5 5v14l11-7z"/><rect x="18" y="5" width="2" height="14" fill="currentColor" stroke="none"/></symbol>
 </svg>
 
 <div class="topbar">
@@ -1063,7 +1083,7 @@ body.theme-light .bp-card,body.theme-ice .bp-card{background:#ffffff80}
     <button class="btn" id="onboard-preview-btn"><svg class="ic"><use href="#i-info"/></svg></button>
   </div>
   <div class="set-row">
-    <div><div class="set-l" data-i18n="set.widgetIntro.l">위젯 소개</div><div class="set-s" data-i18n="set.widgetIntro.s">32개 위젯을 하나씩 아이콘과 설명으로 둘러봐요</div></div>
+    <div><div class="set-l" data-i18n="set.widgetIntro.l">위젯 소개</div><div class="set-s" data-i18n="set.widgetIntro.s">33개 위젯을 하나씩 아이콘과 설명으로 둘러봐요</div></div>
     <button class="btn" id="widgetIntroBtn"><svg class="ic"><use href="#i-search"/></svg></button>
   </div>
   <div class="set-row">
@@ -1121,6 +1141,7 @@ body.theme-light .bp-card,body.theme-ice .bp-card{background:#ffffff80}
       <div class="wopt" onclick="addWidget('launcher')"><svg class="ic"><use href="#i-launch"/></svg><div class="nm" data-i18n="w.launcher">바로가기</div></div>
       <div class="wopt" onclick="addWidget('screencap')"><svg class="ic"><use href="#i-camera"/></svg><div class="nm" data-i18n="w.screencap">캡처</div></div>
       <div class="wopt" onclick="addWidget('gametimer')"><svg class="ic"><use href="#i-gamepad"/></svg><div class="nm" data-i18n="w.gametimer">게임 타이머</div></div>
+      <div class="wopt" onclick="addWidget('media')"><svg class="ic"><use href="#i-music"/></svg><div class="nm" data-i18n="w.media">미디어</div></div>
     </div>
     <div class="mdl-s" data-i18n="cat.fun">재미</div>
     <div class="wgrid">
@@ -1231,6 +1252,7 @@ const {ipcRenderer,shell,clipboard,nativeImage}=require('electron')
 // 위로 옮겨서, 그 어떤 코드보다도 먼저 확실히 초기화되게 한다.
 let skipAutoSave=false
 const DEFAULT_SIZE={
+  media:{width:'220px',height:'290px'},
   sports:{width:'250px',height:'320px'},
   gametimer:{width:'210px',height:'195px'},
   g2048:{width:'230px',height:'290px'},
@@ -1486,7 +1508,7 @@ const I18N={
     'set.opacityUnify.l':'투명도 통일','set.opacityUnify.s':'위젯마다 따로 설정한 투명도를 지우고 위 설정값으로 맞춤','set.opacityUnify.done':'모든 위젯의 투명도를 통일했어요',
     'set.autostart.l':'자동 실행','set.autostart.s':'컴퓨터 켤 때 함께 시작',
     'set.globalOnTop.l':'위젯 전체 항상 위에 표시','set.globalOnTop.s':'모든 위젯을 다른 프로그램(브라우저·게임 등) 위에 항상 띄워요',
-    'set.widgetIntro.l':'위젯 소개','set.widgetIntro.s':'32개 위젯을 하나씩 아이콘과 설명으로 둘러봐요',
+    'set.widgetIntro.l':'위젯 소개','set.widgetIntro.s':'33개 위젯을 하나씩 아이콘과 설명으로 둘러봐요',
     'wintro.close':'닫기',
     'set.lock.l':'배치 잠금','set.lock.s':'위치와 크기 고정',
     'set.dnd.l':'방해금지 시간대','set.dnd.s':'이 시간엔 알람·타이머 알림을 조용히 넘겨요','set.dnd.to':'~',
@@ -1523,7 +1545,7 @@ const I18N={
     'tour.6.title':'설정','tour.6.desc':'투명도·배치 잠금·방해금지 시간대·알림 소리·백업/복원 같은 옵션은 전부 여기 있어요. 이 안내도 <b>설정</b>에서 언제든 다시 볼 수 있어요.',
     'tour.10.title':'배치 저장하고 불러오기','tour.10.desc':'지금 배치가 마음에 들면 설정에서 이름 붙여 <b>저장</b>해뒀다가 나중에 바로 불러올 수 있어요(최대 5개). 뭘 놓을지 감이 안 잡히면 <b>미리 만들어진 레이아웃</b>으로 빠르게 시작해도 좋아요.',
     'tour.7.title':'위젯 고정하기','tour.7.desc':'위젯을 <b>우클릭</b>한 뒤 "항상 위에 표시"를 누르면, 그 위젯만 작은 창으로 떨어져 나와서 다른 프로그램(브라우저, 게임 등) 위에도 항상 떠있게 고정할 수 있어요. 고정된 상태에서도 색상·투명도 변경, 크기 조절까지 일반 위젯이랑 똑같이 다 됩니다. 다시 우클릭하면 "고정 해제"로 원래 자리로 돌아와요. 위젯을 전부 다 위로 띄우고 싶으면 설정의 "위젯 전체 항상 위에 표시"를 켜세요.',
-    'tour.11.title':'위젯 하나씩 둘러보기','tour.11.desc':'어떤 위젯이 있는지 하나씩 훑어보고 싶다면 설정의 <b>위젯 소개</b> 버튼을 눌러보세요. 32개 위젯을 아이콘과 짧은 설명으로 하나씩 넘겨볼 수 있어요.',
+    'tour.11.title':'위젯 하나씩 둘러보기','tour.11.desc':'어떤 위젯이 있는지 하나씩 훑어보고 싶다면 설정의 <b>위젯 소개</b> 버튼을 눌러보세요. 33개 위젯을 아이콘과 짧은 설명으로 하나씩 넘겨볼 수 있어요.',
     'tour.9.title':'준비 완료!','tour.9.desc':'이제 자유롭게 위젯을 추가해보세요. 이 안내는 설정 → "첫 실행 안내 다시보기"에서 언제든 다시 볼 수 있어요.',
     'confirm.reset':'모든 위젯과 저장된 데이터가 삭제됩니다. 계속할까요?',
     'preset.promptName':'이 배치를 어떤 이름으로 저장할까요?',
@@ -1535,7 +1557,7 @@ const I18N={
     'w.exchange':'환율','w.stock':'주식','w.sports':'스포츠','w.weather':'날씨',
     'w.timer':'타이머','w.alarm':'알람','w.pomodoro':'뽀모도로','w.calc':'계산기',
     'w.convert':'단위변환','w.dday':'D-day','w.translate':'번역기','w.colorpick':'색상',
-    'w.chart':'그래프','w.launcher':'바로가기','w.screencap':'캡처',
+    'w.chart':'그래프','w.launcher':'바로가기','w.screencap':'캡처','w.media':'미디어',
     'w.quote':'명언','w.dice':'주사위','w.snake':'스네이크','w.g2048':'2048','w.minesweeper':'지뢰찾기','w.tictactoe':'틱택토','w.gametimer':'게임 타이머',
     'w.worldclock':'월드클락',
     'wintro.clock':'아날로그와 디지털 시계를 한 위젯에서 같이 볼 수 있어요.',
@@ -1564,6 +1586,7 @@ const I18N={
     'wintro.launcher':'자주 쓰는 프로그램을 바로가기로 등록해서 실행해요.',
     'wintro.screencap':'화면을 캡처·녹화하고, 공유용 워터마크 캡처도 할 수 있어요.',
     'wintro.gametimer':'게임한 시간을 재고 기록해요.',
+    'wintro.media':'지금 재생 중인 곡을 보고 재생/일시정지·다음곡·볼륨을 조절해요.',
     'wintro.quote':'눌러볼 때마다 다른 명언을 보여줘요.',
     'wintro.dice':'주사위나 동전을 굴려요.',
     'wintro.snake':'방향키로 즐기는 클래식 스네이크 게임이에요.',
@@ -1628,6 +1651,7 @@ const I18N={
     'wi.launcher.discord':'디스코드 열기','wi.launcher.discordFail':'디스코드가 설치돼있지 않은 것 같아요',
     'wi.gametimer.hint':'시작을 누르면 게임 시간을 재요','wi.gametimer.running':'게임하는 중 ⋅ 계속 재는 중',
     'wi.gametimer.breakOff':'휴식 알림 끄기','wi.gametimer.break30':'30분마다 휴식 알림','wi.gametimer.break60':'1시간마다 휴식 알림','wi.gametimer.break90':'1시간30분마다 휴식 알림',
+    'wi.media.none':'재생 중인 음악이 없어요','wi.media.prev':'이전곡','wi.media.play':'재생','wi.media.pause':'일시정지','wi.media.next':'다음곡','wi.media.unsupported':'이 기능을 쓸 수 없는 환경이에요',
     'wi.gametimer.breakTitle':'슬슬 눈 좀 쉬어줄 때','wi.gametimer.breakBody':'게임 시작한 지 좀 됐어요, 잠깐 스트레칭이라도 하고 와요',
     'wi.g2048.hint':'위젯 클릭 후 방향키로 플레이','wi.g2048.win':'2048 만들었다! 계속하려면 아무 키나','wi.g2048.over':'더 이상 움직일 수 없어요 ⋅ 다시 시작하려면 아무 키나',
     'wi.mine.hint':'클릭: 열기 · 우클릭: 깃발','wi.mine.win':'클리어! 🎉','wi.mine.lose':'펑! 💥','wi.mine.flags':'깃발 {n}/{total}',
@@ -1659,7 +1683,7 @@ const I18N={
     'set.opacityUnify.l':'Unify opacity','set.opacityUnify.s':'Clear per-widget opacity overrides and match the setting above','set.opacityUnify.done':'Unified opacity across all widgets',
     'set.autostart.l':'Start with Windows','set.autostart.s':'Launch automatically when your PC starts',
     'set.globalOnTop.l':'Keep all widgets on top','set.globalOnTop.s':'Keep every widget above other apps (browsers, games, etc.)',
-    'set.widgetIntro.l':'Widget guide','set.widgetIntro.s':'Browse all 32 widgets one by one, with an icon and description',
+    'set.widgetIntro.l':'Widget guide','set.widgetIntro.s':'Browse all 33 widgets one by one, with an icon and description',
     'wintro.close':'Close',
     'set.lock.l':'Lock layout','set.lock.s':'Fix position and size',
     'set.dnd.l':'Quiet hours','set.dnd.s':'Skip alarm/timer sounds and notifications during this time','set.dnd.to':'to',
@@ -1696,7 +1720,7 @@ const I18N={
     'tour.6.title':'Settings','tour.6.desc':'Opacity, layout lock, do-not-disturb hours, notification sounds, backup/restore — all the options live here. You can replay this tour anytime from <b>Settings</b>.',
     'tour.10.title':'Save & reload layouts','tour.10.desc':'Like your current setup? <b>Save</b> it with a name in Settings and load it back anytime (up to 5 layouts). Not sure where to start? Try one of the <b>built-in layout presets</b> instead.',
     'tour.7.title':'Pin a widget','tour.7.desc':'Right-click any widget and choose "Always on top" to pop it into its own small window that stays above everything else — even other apps. It still supports color, opacity, and resizing just like a normal widget. Right-click it again and choose "Unpin" to bring it back. Want every widget floating on top at once? Flip on "Keep all widgets on top" in Settings.',
-    'tour.11.title':'Browse every widget','tour.11.desc':'Curious what\'s available? Tap <b>Widget guide</b> in Settings to flip through all 32 widgets with an icon and a short description for each.',
+    'tour.11.title':'Browse every widget','tour.11.desc':'Curious what\'s available? Tap <b>Widget guide</b> in Settings to flip through all 33 widgets with an icon and a short description for each.',
     'tour.9.title':'You\'re all set!','tour.9.desc':'Go ahead and add your first widget. You can replay this tour anytime from Settings → "Replay first-run tour".',
     'confirm.reset':'All widgets and saved data will be deleted. Continue?',
     'preset.promptName':'Name this layout:',
@@ -1708,7 +1732,7 @@ const I18N={
     'w.exchange':'Exchange Rate','w.stock':'Stocks','w.sports':'Sports','w.weather':'Weather',
     'w.timer':'Timer','w.alarm':'Alarm','w.pomodoro':'Pomodoro','w.calc':'Calculator',
     'w.convert':'Unit Convert','w.dday':'D-day','w.translate':'Translate','w.colorpick':'Color Picker',
-    'w.chart':'Chart','w.launcher':'Launcher','w.screencap':'Capture',
+    'w.chart':'Chart','w.launcher':'Launcher','w.screencap':'Capture','w.media':'Media',
     'w.quote':'Quote','w.dice':'Dice','w.snake':'Snake','w.g2048':'2048','w.minesweeper':'Minesweeper','w.tictactoe':'Tic-Tac-Toe','w.gametimer':'Game Timer',
     'w.worldclock':'World Clock',
     'wintro.clock':'An analog and digital clock together in one widget.',
@@ -1737,6 +1761,7 @@ const I18N={
     'wintro.launcher':'Register shortcuts to the programs you use most.',
     'wintro.screencap':'Screenshot or record your screen, including a shareable watermarked capture.',
     'wintro.gametimer':'Track how long you\'ve been gaming.',
+    'wintro.media':'See what\'s playing and control play/pause, skip, and volume.',
     'wintro.quote':'Shows a different quote every time you tap it.',
     'wintro.dice':'Roll a die or flip a coin.',
     'wintro.snake':'The classic Snake game, played with arrow keys.',
@@ -1801,6 +1826,7 @@ const I18N={
     'wi.launcher.discord':'Open Discord','wi.launcher.discordFail':'Discord doesn\'t seem to be installed',
     'wi.gametimer.hint':'Press start to track your play time','wi.gametimer.running':'Gaming ⋅ still tracking',
     'wi.gametimer.breakOff':'Break reminders off','wi.gametimer.break30':'Remind every 30 min','wi.gametimer.break60':'Remind every 1 hour','wi.gametimer.break90':'Remind every 1.5 hours',
+    'wi.media.none':'Nothing is playing','wi.media.prev':'Previous','wi.media.play':'Play','wi.media.pause':'Pause','wi.media.next':'Next','wi.media.unsupported':'Not available on this system',
     'wi.gametimer.breakTitle':'Time to rest your eyes','wi.gametimer.breakBody':'You\'ve been playing a while — stretch for a sec',
     'wi.g2048.hint':'Click the widget, then use arrow keys','wi.g2048.win':'You made 2048! Press any key to keep going','wi.g2048.over':'No more moves ⋅ press any key to restart',
     'wi.mine.hint':'Click: reveal · Right-click: flag','wi.mine.win':'Cleared! 🎉','wi.mine.lose':'Boom! 💥','wi.mine.flags':'Flags {n}/{total}',
@@ -2783,7 +2809,7 @@ const WIDGET_INTRO_LIST=[
   {type:'clock',icon:'i-clock'},{type:'calendar',icon:'i-cal'},{type:'links',icon:'i-link'},{type:'worldclock',icon:'i-worldclock'},
   {type:'todo',icon:'i-check-sq'},{type:'memo',icon:'i-note'},{type:'habit',icon:'i-target'},{type:'counter',icon:'i-hash'},{type:'clipboard',icon:'i-clipboard'},
   {type:'news',icon:'i-news'},{type:'exchange',icon:'i-exch'},{type:'stock',icon:'i-chart-up'},{type:'sports',icon:'i-trophy'},{type:'weather',icon:'i-cloud'},
-  {type:'timer',icon:'i-timer'},{type:'alarm',icon:'i-bell'},{type:'pomodoro',icon:'i-tomato'},{type:'calc',icon:'i-calc'},{type:'convert',icon:'i-ruler'},{type:'dday',icon:'i-flag'},{type:'translate',icon:'i-globe'},{type:'colorpick',icon:'i-droplet'},{type:'chart',icon:'i-bars'},{type:'launcher',icon:'i-launch'},{type:'screencap',icon:'i-camera'},{type:'gametimer',icon:'i-gamepad'},
+  {type:'timer',icon:'i-timer'},{type:'alarm',icon:'i-bell'},{type:'pomodoro',icon:'i-tomato'},{type:'calc',icon:'i-calc'},{type:'convert',icon:'i-ruler'},{type:'dday',icon:'i-flag'},{type:'translate',icon:'i-globe'},{type:'colorpick',icon:'i-droplet'},{type:'chart',icon:'i-bars'},{type:'launcher',icon:'i-launch'},{type:'screencap',icon:'i-camera'},{type:'gametimer',icon:'i-gamepad'},{type:'media',icon:'i-music'},
   {type:'quote',icon:'i-quote'},{type:'dice',icon:'i-dice'},{type:'snake',icon:'i-snake'},{type:'g2048',icon:'i-2048'},{type:'minesweeper',icon:'i-mine'},{type:'tictactoe',icon:'i-ttt'}
 ]
 let wintroStep=0
@@ -3830,6 +3856,8 @@ weather:'<div class="news-hdr"><div class="wl" style="margin-bottom:0" data-i18n
 
 gametimer:'<div class="wl" data-i18n="w.gametimer">'+icHTML('i-gamepad')+'게임 타이머</div><div class="wc" style="justify-content:center;align-items:center"><div class="tdisp gt-disp">00:00:00</div><div class="thint gt-hint" data-i18n="wi.gametimer.hint">시작을 누르면 게임 시간을 재요</div><div class="tctrls"><button class="tbtn primary gt-start" data-i18n="common.start">시작</button><button class="tbtn gt-reset" data-i18n="common.reset">초기화</button></div><select class="lk-field gt-break" style="margin-top:8px"><option value="0" data-i18n="wi.gametimer.breakOff">휴식 알림 끄기</option><option value="30" data-i18n="wi.gametimer.break30">30분마다 휴식 알림</option><option value="60" data-i18n="wi.gametimer.break60">1시간마다 휴식 알림</option><option value="90" data-i18n="wi.gametimer.break90">1시간30분마다 휴식 알림</option></select></div><div class="rh"></div>',
 
+media:'<div class="wl" data-i18n="w.media">'+icHTML('i-music')+'미디어</div><div class="wc media-wc"><img class="media-art" style="display:none"><div class="media-nodata thint" data-i18n="wi.media.none">재생 중인 음악이 없어요</div><div class="media-info" style="display:none"><div class="media-title"></div><div class="media-artist"></div></div><div class="media-progress" style="display:none"><div class="media-progress-fill"></div></div><div class="media-time" style="display:none"><span class="media-pos">0:00</span><span class="media-dur">0:00</span></div><div class="tctrls media-ctrls" style="display:none"><button type="button" class="tbtn media-prev" data-i18n-title="wi.media.prev" title="이전곡">'+icHTML('i-prev')+'</button><button type="button" class="tbtn primary media-playbtn" data-i18n-title="wi.media.play" title="재생/일시정지">'+icHTML('i-play')+'</button><button type="button" class="tbtn media-next" data-i18n-title="wi.media.next" title="다음곡">'+icHTML('i-next')+'</button></div><div class="media-vol-row"><svg class="ic"><use href="#i-vol"/></svg><input type="range" class="media-vol-slider sld" min="0" max="100" value="50"></div></div><div class="rh"></div>',
+
 g2048:'<div class="wl" data-i18n="w.g2048">'+icHTML('i-2048')+'2048<span class="g2048-score"></span></div><div class="wc" style="align-items:center;justify-content:center"><div class="g2048-board"></div><div class="thint g2048-hint" data-i18n="wi.g2048.hint">위젯 클릭 후 방향키로 플레이</div></div><div class="rh"></div>',
 
 minesweeper:'<div class="wl" data-i18n="w.minesweeper">'+icHTML('i-mine')+'지뢰찾기<span class="mine-status"></span></div><div class="wc" style="align-items:center;justify-content:center"><div class="mine-board"></div><div class="thint mine-hint" data-i18n="wi.mine.hint">클릭: 열기 · 우클릭: 깃발</div><button class="tbtn mine-restart" style="margin-top:6px" data-i18n="common.restart">새 게임</button></div><div class="rh"></div>',
@@ -3910,7 +3938,7 @@ function addWidgetInner(type,left,top,width,height,fixedId,fixedZ,fixedLocked){
     translate:initTranslate,colorpick:initColorpick,chart:initChart,snake:initSnake,sports:initSports,
     clipboard:initClipboard,launcher:initLauncher,screencap:initScreencap,alarm:initAlarm,weather:initWeather,
     gametimer:initGametimer,g2048:initG2048,minesweeper:initMinesweeper,tictactoe:initTictactoe,
-    worldclock:initWorldClock}
+    worldclock:initWorldClock,media:initMedia}
   // F[type](d) 안(위젯 초기화 함수)에서 뭔가 터지면, 그 아래 있는
   // closeModal()이 아예 실행이 안 돼서 모달이 화면에 그대로 남아있는데
   // 유저 입장에선 "버튼 눌러도 반응 없음"으로 보일 수 있다. 그래서 위젯
@@ -6470,6 +6498,119 @@ function initGametimer(w){
     }
   },1000))
   upd()
+}
+
+// ── 미디어 컨트롤 위젯 ──
+// 윈도우 미디어 세션 API(WinRT)는 렌더러(Chromium)에서 직접 접근할 수 없어서,
+// main.js가 파워쉘 스크립트(media.ps1/control.ps1/volume.ps1)를 자식 프로세스로
+// 띄워 대신 조회/제어해준다. 파워쉘 프로세스를 새로 띄우는 자체가 가볍지 않은
+// 작업이라(체감상 수백ms), "지금 재생 중인 곡" 조회는 몇 초에 한 번만 하고, 그
+// 사이 진행바는 마지막으로 받은 위치값 + 경과 시간으로 로컬에서 보간해서
+// 부드럽게 보이도록 한다(실제 값과는 poll 주기만큼만 어긋날 수 있음). 이전
+// poll이 아직 안 끝났으면 새 poll을 또 띄우지 않아서(busy 플래그) 시스템이
+// 느릴 때 파워쉘 프로세스가 쌓이는 것도 막는다.
+function initMedia(w){
+  const artEl=w.querySelector('.media-art')
+  const nodataEl=w.querySelector('.media-nodata')
+  const infoEl=w.querySelector('.media-info')
+  const titleEl=w.querySelector('.media-title')
+  const artistEl=w.querySelector('.media-artist')
+  const progEl=w.querySelector('.media-progress')
+  const fillEl=w.querySelector('.media-progress-fill')
+  const timeEl=w.querySelector('.media-time')
+  const posEl=w.querySelector('.media-pos')
+  const durEl=w.querySelector('.media-dur')
+  const ctrlsEl=w.querySelector('.media-ctrls')
+  const prevBtn=w.querySelector('.media-prev')
+  const playBtn=w.querySelector('.media-playbtn')
+  const nextBtn=w.querySelector('.media-next')
+  const volSlider=w.querySelector('.media-vol-slider')
+
+  let playing=false,lastPos=0,lastDur=0,lastFetchAt=0,busy=false
+
+  function fmtTime(sec){
+    sec=Math.max(0,Math.floor(sec||0))
+    const m=Math.floor(sec/60),s=sec%60
+    return m+':'+String(s).padStart(2,'0')
+  }
+  function setPlayIcon(){
+    const use=playBtn.querySelector('use')
+    if(use)use.setAttribute('href',playing?'#i-pause':'#i-play')
+    playBtn.title=wt(playing?'wi.media.pause':'wi.media.play')
+  }
+  function renderProgress(){
+    const extra=playing?(Date.now()-lastFetchAt)/1000:0
+    const pos=lastDur>0?Math.min(lastDur,lastPos+extra):lastPos+extra
+    posEl.textContent=fmtTime(pos)
+    durEl.textContent=fmtTime(lastDur)
+    fillEl.style.width=(lastDur>0?Math.min(100,pos/lastDur*100):0)+'%'
+  }
+  function renderNone(){
+    nodataEl.style.display=''
+    artEl.style.display='none'
+    infoEl.style.display='none'
+    progEl.style.display='none'
+    timeEl.style.display='none'
+    ctrlsEl.style.display='none'
+    playing=false
+  }
+  function renderData(d){
+    nodataEl.style.display='none'
+    infoEl.style.display=''
+    progEl.style.display=''
+    timeEl.style.display=''
+    ctrlsEl.style.display=''
+    titleEl.textContent=d.title||wt('wi.media.none')
+    artistEl.textContent=d.artist||''
+    if(d.hasThumbnail&&d.thumbPath){
+      artEl.src='file:///'+String(d.thumbPath).replace(/\\/g,'/')+'?t='+Date.now()
+      artEl.style.display=''
+    }else{
+      artEl.style.display='none'
+    }
+    playing=(d.status==='Playing')
+    setPlayIcon()
+    lastPos=Number(d.position)||0
+    lastDur=Number(d.duration)||0
+    lastFetchAt=Date.now()
+    renderProgress()
+  }
+  async function poll(){
+    if(busy)return
+    busy=true
+    try{
+      const raw=await ipcRenderer.invoke('media-now-playing')
+      if(!raw||raw.status==='none')renderNone()
+      else renderData(raw)
+    }catch(e){renderNone()}
+    finally{busy=false}
+  }
+
+  renderNone()
+
+  prevBtn.addEventListener('click',e=>{e.stopPropagation();ipcRenderer.invoke('media-control','prev').catch(()=>{});setTimeout(poll,400)})
+  nextBtn.addEventListener('click',e=>{e.stopPropagation();ipcRenderer.invoke('media-control','next').catch(()=>{});setTimeout(poll,400)})
+  playBtn.addEventListener('click',e=>{
+    e.stopPropagation()
+    playing=!playing;setPlayIcon() // 실제 응답 오기 전까지는 낙관적으로 먼저 바꿔서 눌렀을 때 바로 반응하는 것처럼 보이게 함
+    ipcRenderer.invoke('media-control','play-pause').catch(()=>{})
+    setTimeout(poll,400)
+  })
+  volSlider.addEventListener('mousedown',e=>e.stopPropagation())
+  let volDebounce=null
+  volSlider.addEventListener('input',e=>{
+    e.stopPropagation()
+    clearTimeout(volDebounce)
+    const v=parseInt(volSlider.value,10)
+    // 슬라이더를 드래그하는 동안 계속 볼륨 조회는 필요없고, 값만 시스템에 반영하면 됨
+    volDebounce=setTimeout(()=>{ipcRenderer.invoke('media-volume',v).catch(()=>{})},120)
+  })
+
+  ipcRenderer.invoke('media-volume').then(v=>{if(typeof v==='number'&&isFinite(v))volSlider.value=v}).catch(()=>{})
+
+  setTimeout(poll,staggerDelay())
+  regTimer(w,setInterval(poll,3000))
+  regTimer(w,setInterval(()=>{if(playing)renderProgress()},250))
 }
 
 // 4x4 그리드에서 방향키로 숫자를 밀어 합치는 클래식 2048. 위젯이 여러 개
