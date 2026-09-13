@@ -2,7 +2,7 @@
 
 ## Title
 
-I got tired of my empty Windows desktop, so I built a free widget app (31 widgets, open source)
+I got tired of my empty Windows desktop, so I built a free widget app (32 widgets, open source)
 
 ## Body (English)
 
@@ -10,7 +10,7 @@ Hey everyone, I'm a solo dev from South Korea.
 
 I got tired of my Windows desktop being empty, and every widget app I tried was either paid, ad-filled, or too heavy. So I built my own: **Wobi**, a free desktop widget app.
 
-It's got 31 widgets so far — clock, to-do list, notes, weather, unit converter, a couple mini games, and more. Fully free, no ads, no account needed, and open source.
+It's got 32 widgets so far — clock, to-do list, notes, weather, unit converter, a couple mini games, and more. Fully free, no ads, no account needed, and open source.
 
 Still actively building it, so any feedback is welcome.
 
@@ -25,7 +25,7 @@ GitHub: https://github.com/dortomyork09-cyber/Wobi
 
 윈도우 바탕화면이 텅 빈 게 지겨워서 위젯 앱을 찾아봤는데, 죄다 유료거나 광고 범벅이거나 너무 무겁더라고요. 그래서 직접 만들었어요: 무료 데스크톱 위젯 앱 **Wobi**.
 
-지금까지 위젯 31개예요 — 시계, 할일 목록, 메모, 날씨, 단위 변환기, 미니 게임 몇 개 등. 완전 무료, 광고 없음, 계정 필요 없음, 오픈소스입니다.
+지금까지 위젯 32개예요 — 시계, 할일 목록, 메모, 날씨, 단위 변환기, 미니 게임 몇 개 등. 완전 무료, 광고 없음, 계정 필요 없음, 오픈소스입니다.
 
 계속 만들어가는 중이라 피드백 환영해요.
 
