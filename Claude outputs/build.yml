@@ -1,0 +1,49 @@
+﻿name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      # 예전엔 package.json의 "version"을 손으로 안 올리고 git 태그만 찍어서 릴리즈해서
+      # (예: v1.5.1, v1.5.2 태그인데 package.json엔 계속 1.5.0) 빌드된 앱이 내부적으로는
+      # 전부 같은 버전으로 인식됐고, 그래서 electron-updater가 "이미 최신"이라고 착각해서
+      # 자동 업데이트가 절대 안 뜨는 버그가 있었음. 이제 태그(v1.5.3 등)에서 버전을 뽑아서
+      # 빌드 직전에 package.json에 강제로 반영 — 태그만 정확히 찍으면 이 문제가 다시는 안 생김.
+      - name: Sync package.json version from git tag
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          npm version "$TAG_VERSION" --no-git-tag-version --allow-same-version
+
+      - name: Build installer (NSIS)
+        run: npm run build:installer
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+            dist/latest.yml
+            dist/*.blockmap
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -162,9 +162,11 @@ body.theme-mono .widget::before{background:radial-gradient(circle at 32% 28%,#ff
 .brand{display:flex;align-items:center;gap:9px}
 .brand-mk{
   width:22px;height:22px;border-radius:6px;
-  background:linear-gradient(135deg,var(--c4),var(--c2));
+  /* 앱 아이콘(icon.png)과 같은 틸→인디고 그라디언트로 고정 — 테마별 강조색(--c1~8)을
+     쓰지 않고 브랜드 색을 그대로 박아둬야 테마를 바꿔도 로고 색이 안 흔들린다. */
+  background:linear-gradient(135deg,#14b8a6,#6366f1);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 10px #2563eb50;
+  box-shadow:0 2px 10px #6366f150;
 }
 .brand-mk svg{width:12px;height:12px;stroke:#fff;stroke-width:2.4}
 .brand-tx{font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--c6)}
@@ -1463,14 +1465,16 @@ setTimeout(runNudgeCheck,15000)
 // ==========================================
 // 다국어(i18n) — 앱 화면(상단바·설정·테마·위젯 추가 모달 등)을 한국어/영어로.
 // ==========================================
-// 앱의 "틀"(상단바, 설정 패널, 위젯 추가 모달, 첫 실행 안내)뿐 아니라 31개
+// 앱의 "틀"(상단바, 설정 패널, 위젯 추가 모달, 첫 실행 안내)뿐 아니라 32개
 // 위젯 하나하나 내부의 라벨·버튼·상태 텍스트까지 전부 이 딕셔너리를 거쳐
 // wt()/data-i18n으로 표시한다. 예외 3가지만 의도적으로 한국어 전용으로 둔다:
-// 1) 환율/주식/날씨 위젯 — 한국 실정(원화, 국내 종목 검색 등)에 맞춘 위젯이라
-//    영어 모드에서는 "위젯 추가" 목록에서만 숨긴다(.kr-only, 이미 추가된 위젯은
-//    그대로 유지). 2) console.error(...) 로그 — 화면에 안 뜨고 error.log에만
-//    남는 개발자용 문구라 번역 대상이 아니다. 3) 사용자가 직접 입력한 데이터
-//    (할일·메모·카운터 이름 등) — 앱이 대신 번역해줄 수 없는 내용이라 그대로 둔다.
+// 1) 환율/주식/날씨 위젯 — 내부적으로는 기준 통화 선택(환율)·글로벌 종목 검색(주식,
+//    이미 야후 파이낸스 기반)·앱 언어에 맞춘 도시 검색(날씨)까지 다 준비돼있지만,
+//    아직은 한국어 모드로만 노출하기로 해서 영어 모드에서는 "위젯 추가" 목록에서만
+//    숨긴다(.kr-only, 이미 추가된 위젯은 그대로 유지). 2) console.error(...) 로그 —
+//    화면에 안 뜨고 error.log에만 남는 개발자용 문구라 번역 대상이 아니다.
+// 3) 사용자가 직접 입력한 데이터(할일·메모·카운터 이름 등) — 앱이 대신 번역해줄 수
+//    없는 내용이라 그대로 둔다.
 const I18N={
   ko:{
     'top.theme':'테마','top.settings':'설정','top.addWidget':'위젯',
@@ -1592,6 +1596,7 @@ const I18N={
     'wi.launcher.pathPh':'경로 붙여넣기 또는 파일을 여기로 끌어오기',
     'wi.cap.idle':'대기 중','wi.cap.shot':'캡처','wi.cap.rec':'녹화',
     'wi.weather.srcTitle':'지역 설정','wi.weather.cityPh':'도시 이름 (예: 서울, 부산, Tokyo)','wi.weather.initial':'설정(⚙)에서 도시를 입력해주세요',
+    'wi.exchange.baseTitle':'기준 통화 설정',
     'wi.news.srcFail':'등록한 RSS 주소를 불러올 수 없어요','wi.news.fail':'뉴스를 불러올 수 없어요','wi.news.empty':'뉴스가 없어요',
     'common.error':'오류 발생','wi.common.updated':'업데이트: ','wi.common.connFail':'연결 실패','wi.common.noResult':'검색 결과가 없어요','common.retry':'다시 시도',
     'wi.stock.empty':'위에서 회사를 검색해 추가해보세요','wi.stock.searching':'검색 중...',
@@ -1764,6 +1769,7 @@ const I18N={
     'wi.launcher.pathPh':'Paste a path or drag a file here',
     'wi.cap.idle':'Idle','wi.cap.shot':'Snapshot','wi.cap.rec':'Record',
     'wi.weather.srcTitle':'Location settings','wi.weather.cityPh':'City name (e.g. Seoul, Tokyo, New York)','wi.weather.initial':'Enter a city in settings (⚙)',
+    'wi.exchange.baseTitle':'Base currency settings',
     'wi.news.srcFail':'Could not load the registered RSS feed','wi.news.fail':'Could not load news','wi.news.empty':'No news',
     'common.error':'An error occurred','wi.common.updated':'Updated: ','wi.common.connFail':'Connection failed','wi.common.noResult':'No results','common.retry':'Retry',
     'wi.stock.empty':'Search for a company above to add it','wi.stock.searching':'Searching...',
@@ -3783,7 +3789,7 @@ counter:'<div class="wl" data-i18n="w.counter">'+icHTML('i-hash')+'카운터</di
 
 news:'<div class="news-hdr"><div class="wl" style="margin-bottom:0" data-i18n="w.news">'+icHTML('i-news')+'뉴스</div><div class="news-hdr-btns"><button class="news-srcbtn" data-i18n-title="wi.news.srcTitle" title="RSS 소스 설정">'+icHTML('i-gear')+'</button><button class="news-rbtn" data-i18n="common.refresh">'+icHTML('i-refresh')+'새로고침</button></div></div><div class="news-src-row" style="display:none"><input class="lk-field news-src-in" data-i18n-placeholder="wi.news.srcPh" placeholder="RSS 주소(https://...) — 비우면 기본 뉴스"><button class="lk-addbtn news-src-save" data-i18n="common.save">저장</button></div><div class="news-list"><div class="nst" data-i18n="common.loading">불러오는 중</div></div><div class="rh"></div>',
 
-exchange:'<div class="wl" data-i18n="w.exchange">'+icHTML('i-exch')+'환율<span class="npb">LIVE</span></div><div class="wc scr" style="overflow-y:auto"><div class="ri" data-url="https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW"><span class="rl"><span class="rf">USD</span></span><div class="rr"><span class="rv usd-val">-</span><span class="rch usd-chg"></span></div></div><div class="ri" data-url="https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_JPYKRW"><span class="rl"><span class="rf">JPY 100</span></span><div class="rr"><span class="rv jpy-val">-</span><span class="rch jpy-chg"></span></div></div><div class="ri" data-url="https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_EURKRW"><span class="rl"><span class="rf">EUR</span></span><div class="rr"><span class="rv eur-val">-</span><span class="rch eur-chg"></span></div></div><div class="ri" data-url="https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_CNYKRW"><span class="rl"><span class="rf">CNY</span></span><div class="rr"><span class="rv cny-val">-</span><span class="rch cny-chg"></span></div></div><div class="ri" data-url="https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_GBPKRW"><span class="rl"><span class="rf">GBP</span></span><div class="rr"><span class="rv gbp-val">-</span><span class="rch gbp-chg"></span></div></div></div><div class="rup"></div><div class="rh"></div>',
+exchange:'<div class="news-hdr"><div class="wl" style="margin-bottom:0" data-i18n="w.exchange">'+icHTML('i-exch')+'환율<span class="npb">LIVE</span></div><div class="news-hdr-btns"><button type="button" class="news-srcbtn exchange-srcbtn" data-i18n-title="wi.exchange.baseTitle" title="기준 통화 설정">'+icHTML('i-gear')+'</button></div></div><div class="news-src-row exchange-src-row" style="display:none"><select class="lk-field exchange-base-select"><option value="KRW">KRW</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="JPY">JPY</option><option value="GBP">GBP</option><option value="CNY">CNY</option></select></div><div class="wc scr exch-rows" style="overflow-y:auto"></div><div class="rup"></div><div class="rh"></div>',
 
 stock:'<div class="wl" data-i18n="w.stock">'+icHTML('i-chart-up')+'주식<span class="npb">LIVE</span></div><div class="stock-search-wrap"><input class="lk-field stock-search-in" placeholder="회사명·티커로 검색해서 추가"><div class="stock-search-results"></div></div><div class="wc stcon scr" style="overflow-y:auto"></div><div class="sup"></div><div class="rh"></div>',
 
@@ -4516,9 +4522,106 @@ function initNews(w){
   regTimer(w,setInterval(load,20*1000))
 }
 
+const EXCHANGE_CURRENCIES=['KRW','USD','EUR','JPY','GBP','CNY']
+// 원/엔처럼 한 단위 가치가 작은 통화는 100/1000단위로 묶어서 보여줘야 소수점 이하로
+// 뭉개지지 않는다(예: 기준 통화가 USD일 때 "1 KRW = $0.0007"이 아니라
+// "1000 KRW = $0.72"로). 나머지 통화는 1단위 그대로 보여준다.
+const EXCHANGE_UNIT={KRW:1000,JPY:100,USD:1,EUR:1,GBP:1,CNY:1}
+// 기준 통화가 KRW면 예전처럼 네이버 금융(국내 유저에게 익숙함)으로, 그 외엔
+// 어느 나라에서나 접속되는 xe.com 환율 변환 페이지로 연결한다.
+function exchangeRowUrl(base,cur){
+  if(base==='KRW')return 'https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_'+cur+'KRW'
+  return 'https://www.xe.com/currencyconverter/convert/?Amount=1&From='+base+'&To='+cur
+}
 function initExchange(w){
-  let prev={}
-  w.querySelectorAll('.ri').forEach(i=>i.addEventListener('click',e=>{e.stopPropagation();const u=i.dataset.url;if(u)shell.openExternal(u)}))
+  const K='wcw-exchange-base-'+w.id
+  const srcBtn=w.querySelector('.exchange-srcbtn')
+  const srcRow=w.querySelector('.exchange-src-row')
+  const baseSel=w.querySelector('.exchange-base-select')
+  const rowsEl=w.querySelector('.exch-rows')
+
+  // 기존 유저는 저장된 기준 통화가 없으니 항상 KRW로 시작해서(예전과 동일한 화면)
+  // 하위호환을 지킨다. 영어 모드에서 새로 추가하는 위젯만 기본값을 USD로 준다.
+  let base='KRW'
+  try{
+    const saved=localStorage.getItem(K)
+    if(saved&&EXCHANGE_CURRENCIES.indexOf(saved)>=0)base=saved
+    else if(!saved)base=(currentLang==='en')?'USD':'KRW'
+  }catch(e){}
+  if(baseSel)baseSel.value=base
+
+  let prev={},lastRates=null
+
+  function buildRows(){
+    prev={}
+    if(!rowsEl)return
+    rowsEl.innerHTML=''
+    EXCHANGE_CURRENCIES.filter(c=>c!==base).forEach(cur=>{
+      const unit=EXCHANGE_UNIT[cur]||1
+      const ri=document.createElement('div');ri.className='ri'
+      ri.dataset.url=exchangeRowUrl(base,cur)
+      ri.addEventListener('click',e=>{e.stopPropagation();const u=ri.dataset.url;if(u)shell.openExternal(u)})
+      const rl=document.createElement('span');rl.className='rl'
+      const rf=document.createElement('span');rf.className='rf';rf.textContent=unit>1?cur+' '+unit:cur
+      rl.appendChild(rf)
+      const rr=document.createElement('div');rr.className='rr'
+      const rv=document.createElement('span');rv.className='rv';rv.id='exv-'+cur;rv.textContent='-'
+      const rch=document.createElement('span');rch.className='rch';rch.id='exc-'+cur
+      rr.appendChild(rv);rr.appendChild(rch)
+      ri.appendChild(rl);ri.appendChild(rr)
+      rowsEl.appendChild(ri)
+    })
+  }
+  buildRows()
+
+  function fmtNum(val,decimals){
+    return val.toLocaleString(currentLang==='en'?'en-US':'ko-KR',{minimumFractionDigits:decimals,maximumFractionDigits:decimals})
+  }
+  function set(cur,val,decimals,suf){
+    const ve=w.querySelector('#exv-'+cur),ce=w.querySelector('#exc-'+cur)
+    if(ve)ve.textContent=fmtNum(val,decimals)+suf
+    const pv=prev[cur]
+    if(ce&&pv!==undefined){
+      const df=val-pv,p=pv?(df/pv*100):0,s=df>0?'+':''
+      ce.textContent=s+fmtNum(df,decimals)+suf+' ('+s+p.toFixed(2)+'%)'
+      ce.className='rch '+(df>0?'cup':df<0?'cdn':'')
+    }
+    prev[cur]=val
+  }
+  // 화면에 보이는 값의 단위는 "기준 통화"다 (예: 기준이 USD면 각 행은
+  // "1 EUR가 몇 USD인지"를 보여줌) — 그래서 소수점 자리수/접미사도 기준 통화 기준으로 정한다.
+  function renderAll(){
+    if(!lastRates)return
+    const baseRate=lastRates[base]
+    if(typeof baseRate!=='number'||!isFinite(baseRate))return
+    const decimals=(base==='KRW'||base==='JPY')?0:2
+    const suf=base==='KRW'?'원':(' '+base)
+    EXCHANGE_CURRENCIES.filter(c=>c!==base).forEach(cur=>{
+      const r=lastRates[cur]
+      if(typeof r!=='number'||!isFinite(r))return
+      const val=baseRate/r*(EXCHANGE_UNIT[cur]||1)
+      set(cur,val,decimals,suf)
+    })
+  }
+
+  if(srcBtn&&srcRow){
+    srcBtn.addEventListener('mousedown',e=>e.stopPropagation())
+    srcBtn.addEventListener('click',e=>{
+      e.stopPropagation()
+      srcRow.style.display=srcRow.style.display==='none'?'flex':'none'
+    })
+  }
+  if(baseSel){
+    baseSel.addEventListener('mousedown',e=>e.stopPropagation())
+    baseSel.addEventListener('change',e=>{
+      e.stopPropagation()
+      base=baseSel.value
+      try{localStorage.setItem(K,base)}catch(err){}
+      buildRows()
+      renderAll()
+    })
+  }
+
   async function load(){
     try{
       // 브라우저 fetch()는 이 API들에서 종종 CORS로 막히므로, 메인 프로세스를 거치는
@@ -4528,23 +4631,9 @@ function initExchange(w){
       if(!raw)throw new Error('환율 데이터를 받지 못했습니다')
       const d=JSON.parse(raw)
       if(d.result!=='success'||!d.rates)throw new Error('환율 응답 형식이 올바르지 않습니다')
-      const K=d.rates.KRW,J=d.rates.JPY,E=d.rates.EUR,C=d.rates.CNY,G=d.rates.GBP
-      if([K,J,E,C,G].some(v=>typeof v!=='number'||!isFinite(v)))throw new Error('환율 값이 비어있습니다')
-      function set(vs,cs,val,pv){
-        const e=w.querySelector(vs),ce=w.querySelector(cs)
-        if(e)e.textContent=Math.round(val).toLocaleString()+'원'
-        if(ce&&pv!==undefined){
-          const df=val-pv,p=(df/pv*100).toFixed(2),s=df>0?'+':''
-          ce.textContent=s+Math.round(df)+'원 ('+s+p+'%)'
-          ce.className='rch '+(df>0?'cup':df<0?'cdn':'')
-        }
-      }
-      set('.usd-val','.usd-chg',K,prev.usd)
-      set('.jpy-val','.jpy-chg',K/J*100,prev.jpy)
-      set('.eur-val','.eur-chg',K/E,prev.eur)
-      set('.cny-val','.cny-chg',K/C,prev.cny)
-      set('.gbp-val','.gbp-chg',K/G,prev.gbp)
-      prev={usd:K,jpy:K/J*100,eur:K/E,cny:K/C,gbp:K/G}
+      lastRates=Object.assign({USD:1},d.rates)
+      if(EXCHANGE_CURRENCIES.some(c=>typeof lastRates[c]!=='number'||!isFinite(lastRates[c])))throw new Error('환율 값이 비어있습니다')
+      renderAll()
       const u=w.querySelector('.rup')
       if(u)u.textContent=wt('wi.common.updated')+new Date().toLocaleTimeString(currentLang==='en'?'en-US':'ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
     }catch(e){
@@ -4555,7 +4644,8 @@ function initExchange(w){
   setTimeout(load,staggerDelay());regTimer(w,setInterval(load,60*1000))
 }
 
-const DEFAULT_STOCKS=[
+// 한국어 모드 기본 관심목록 — 해외 빅테크 + 국내(코스피·코스닥) 주요 종목을 섞어서 보여준다.
+const DEFAULT_STOCKS_KO=[
   {s:'AAPL',n:'애플',u:'https://finance.yahoo.com/quote/AAPL'},
   {s:'TSLA',n:'테슬라',u:'https://finance.yahoo.com/quote/TSLA'},
   {s:'NVDA',n:'엔비디아',u:'https://finance.yahoo.com/quote/NVDA'},
@@ -4568,6 +4658,19 @@ const DEFAULT_STOCKS=[
   {s:'000660.KS',n:'SK하이닉스',u:'https://finance.naver.com/item/main.naver?code=000660'},
   {s:'035420.KS',n:'NAVER',u:'https://finance.naver.com/item/main.naver?code=035420'},
   {s:'035720.KS',n:'카카오',u:'https://finance.naver.com/item/main.naver?code=035720'}]
+// 영어 모드 기본 관심목록 — 국내 종목 대신 누구나 아는 글로벌 대형주 위주로 채운다.
+const DEFAULT_STOCKS_EN=[
+  {s:'AAPL',n:'Apple',u:'https://finance.yahoo.com/quote/AAPL'},
+  {s:'MSFT',n:'Microsoft',u:'https://finance.yahoo.com/quote/MSFT'},
+  {s:'GOOGL',n:'Alphabet',u:'https://finance.yahoo.com/quote/GOOGL'},
+  {s:'AMZN',n:'Amazon',u:'https://finance.yahoo.com/quote/AMZN'},
+  {s:'NVDA',n:'NVIDIA',u:'https://finance.yahoo.com/quote/NVDA'},
+  {s:'TSLA',n:'Tesla',u:'https://finance.yahoo.com/quote/TSLA'},
+  {s:'META',n:'Meta',u:'https://finance.yahoo.com/quote/META'},
+  {s:'^GSPC',n:'S&P 500',u:'https://finance.yahoo.com/quote/%5EGSPC'}]
+function defaultStockList(){
+  return JSON.parse(JSON.stringify(currentLang==='en'?DEFAULT_STOCKS_EN:DEFAULT_STOCKS_KO))
+}
 
 // 한글로 검색해도 잘 나오도록 미리 만들어둔 별칭 사전(해외 유명 기업).
 // 예: "애플"을 입력해도 AAPL이 검색되게 해준다.
@@ -4680,8 +4783,8 @@ function initStock(w){
   let list=[]
   try{
     const parsed=JSON.parse(localStorage.getItem(K)||'null')
-    list=Array.isArray(parsed)?parsed.filter(x=>x&&x.s):JSON.parse(JSON.stringify(DEFAULT_STOCKS))
-  }catch(e){list=JSON.parse(JSON.stringify(DEFAULT_STOCKS))}
+    list=Array.isArray(parsed)?parsed.filter(x=>x&&x.s):defaultStockList()
+  }catch(e){list=defaultStockList()}
 
   function sv(){
     try{localStorage.setItem(K,JSON.stringify(list))}catch(e){}
@@ -6880,7 +6983,8 @@ function initWeather(w){
     if(!q)return
     if(citySaveBtn){citySaveBtn.disabled=true;citySaveBtn.textContent=wt('wi.stock.searching')}
     try{
-      const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=1&language=ko&format=json'
+      const geoLang=currentLang==='en'?'en':'ko'
+      const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=1&language='+geoLang+'&format=json'
       const raw=await ipcRenderer.invoke('fetch-url',url)
       if(!raw)throw new Error('geocoding 응답이 비어있어요')
       const d=JSON.parse(raw)
